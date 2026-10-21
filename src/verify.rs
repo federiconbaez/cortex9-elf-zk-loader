@@ -1,8 +1,8 @@
 //! Verificación de la prueba en `.fnbr.sig`, extensible por algoritmo.
 //!
-//! Hoy hay **un** verificador real: Ed25519 (firma, no Zero-Knowledge).
-//! `ZkUnimplemented` existe para fijar la interfaz y siempre rechaza: no se
-//! finge una prueba ZK que no se verifica.
+//! - `alg=1` Ed25519 (firma sobre SHA-512 del ELF).
+//! - `alg=2` Schnorr/Ristretto Fiat-Shamir (prueba de conocimiento del DL
+//!   de la clave del publicador, atada al SHA-256 del ELF). Ver `zk`.
 
 use ed25519_dalek::{Signature, Verifier as _, VerifyingKey};
 use sha2::{Digest, Sha256};
@@ -15,7 +15,7 @@ pub enum VerifyError {
     UnknownAlg(u32),
     /// Hay sección y algoritmo, pero ningún verificador registrado lo acepta.
     NoVerifierFor(Alg),
-    /// El algoritmo existe en el formato pero no está implementado (ZK).
+    /// El algoritmo existe en el formato pero este verificador no lo cubre.
     Unsupported(&'static str),
     UnknownKey([u8; 32]),
     BadSignature,
@@ -37,11 +37,17 @@ impl From<SectionError> for VerifyError {
     }
 }
 
-/// Un verificador de pruebas para un algoritmo. Implementar este trait es el
-/// punto de extensión para un verificador ZK real en el futuro.
+/// Material que el verificador puede usar. Ed25519 mira `digest_sha512`;
+/// Schnorr mira `content_sha256`.
+pub struct VerifyMaterial<'a> {
+    pub digest_sha512: &'a [u8; 64],
+    pub content_sha256: &'a [u8; 32],
+}
+
+/// Un verificador de pruebas para un algoritmo.
 pub trait ProofVerifier {
     fn alg(&self) -> Alg;
-    fn verify(&self, digest: &[u8; 64], sec: &SigSection) -> Result<(), VerifyError>;
+    fn verify(&self, material: &VerifyMaterial<'_>, sec: &SigSection) -> Result<(), VerifyError>;
 }
 
 pub fn key_id(pk: &VerifyingKey) -> [u8; 32] {
@@ -64,32 +70,17 @@ impl ProofVerifier for Ed25519Verifier {
         Alg::Ed25519
     }
 
-    fn verify(&self, digest: &[u8; 64], sec: &SigSection) -> Result<(), VerifyError> {
+    fn verify(&self, material: &VerifyMaterial<'_>, sec: &SigSection) -> Result<(), VerifyError> {
         let pk = self
             .trusted
             .iter()
             .find(|k| key_id(k) == sec.key_id)
             .ok_or(VerifyError::UnknownKey(sec.key_id))?;
         let sig = Signature::from_bytes(&sec.proof);
-        // verify_strict rechaza firmas maleables y claves de orden pequeño.
-        pk.verify_strict(digest, &sig).map_err(|_| VerifyError::BadSignature)?;
-        // `verify` normal también, por si cambia la semántica de strict.
-        pk.verify(digest, &sig).map_err(|_| VerifyError::BadSignature)
-    }
-}
-
-/// Marcador honesto: el formato reserva `alg = 2` para ZK, pero no hay
-/// verificador. Registrarlo no habilita nada; siempre devuelve `Unsupported`.
-pub struct ZkUnimplemented;
-
-impl ProofVerifier for ZkUnimplemented {
-    fn alg(&self) -> Alg {
-        Alg::ZkReserved
-    }
-    fn verify(&self, _: &[u8; 64], _: &SigSection) -> Result<(), VerifyError> {
-        Err(VerifyError::Unsupported(
-            "verificación Zero-Knowledge no implementada; no se acepta ningún binario con alg=2",
-        ))
+        pk.verify_strict(material.digest_sha512, &sig)
+            .map_err(|_| VerifyError::BadSignature)?;
+        pk.verify(material.digest_sha512, &sig)
+            .map_err(|_| VerifyError::BadSignature)
     }
 }
 
@@ -124,7 +115,12 @@ pub fn verify_elf(bytes: Vec<u8>, verifiers: &[&dyn ProofVerifier]) -> Result<Ve
         .iter()
         .find(|v| v.alg() == alg)
         .ok_or(VerifyError::NoVerifierFor(alg))?;
-    let digest = sigsection::signing_digest(&bytes, loc);
-    v.verify(&digest, &sec)?;
+    let digest_sha512 = sigsection::signing_digest(&bytes, loc);
+    let content_sha256 = sigsection::content_hash_sha256(&bytes, loc);
+    let material = VerifyMaterial {
+        digest_sha512: &digest_sha512,
+        content_sha256: &content_sha256,
+    };
+    v.verify(&material, &sec)?;
     Ok(VerifiedElf { bytes, alg, key_id: sec.key_id })
 }

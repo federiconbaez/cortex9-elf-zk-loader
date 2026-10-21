@@ -1,7 +1,7 @@
 //! Formato de la sección `.fnbr.sig` y cálculo del digest firmado.
 
 use goblin::elf::Elf;
-use sha2::{Digest, Sha512};
+use sha2::{Digest, Sha256, Sha512};
 
 pub const SECTION_NAME: &str = ".fnbr.sig";
 pub const SECTION_SIZE: usize = 128;
@@ -11,16 +11,17 @@ pub const MAGIC: &[u8; 8] = b"FNBRSIG1";
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Alg {
     Ed25519 = 1,
-    /// Reservado para una prueba Zero-Knowledge. **No implementado**: ningún
-    /// verificador de este crate lo acepta.
-    ZkReserved = 2,
+    /// Schnorr no interactivo (Fiat-Shamir) sobre Ristretto255: prueba de
+    /// conocimiento del logaritmo discreto de la clave del publicador,
+    /// atada al hash del binario. Ver `zk` y README (qué se prueba / qué no).
+    SchnorrRistretto = 2,
 }
 
 impl Alg {
     pub fn from_u32(v: u32) -> Option<Self> {
         match v {
             1 => Some(Alg::Ed25519),
-            2 => Some(Alg::ZkReserved),
+            2 => Some(Alg::SchnorrRistretto),
             _ => None,
         }
     }
@@ -132,6 +133,16 @@ pub fn locate(file: &[u8]) -> Result<SectionLoc, SectionError> {
 pub fn signing_digest(file: &[u8], loc: SectionLoc) -> [u8; 64] {
     let mut h = Sha512::new();
     h.update(b"FNBR-ELF-SIG-v1\0");
+    h.update(&file[..loc.offset]);
+    h.update([0u8; SECTION_SIZE]);
+    h.update(&file[loc.offset + loc.size..]);
+    h.finalize().into()
+}
+
+/// SHA-256 del archivo con `.fnbr.sig` en cero. Es el binding del transcript
+/// Fiat-Shamir de la prueba Schnorr (`alg=2`).
+pub fn content_hash_sha256(file: &[u8], loc: SectionLoc) -> [u8; 32] {
+    let mut h = Sha256::new();
     h.update(&file[..loc.offset]);
     h.update([0u8; SECTION_SIZE]);
     h.update(&file[loc.offset + loc.size..]);

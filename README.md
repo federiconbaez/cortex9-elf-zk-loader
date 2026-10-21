@@ -5,43 +5,48 @@
 pruebas criptográficas Zero-Knowledge en una sección `.fnbr.sig` antes de
 permitir que el kernel mapee las páginas como ejecutables (`PROT_EXEC`).
 
-## Flujo (v0.2)
+## Flujo (v0.3)
 ```
-gcc/ld ──► ELF ──► fnbr-sign prepare  (agrega .fnbr.sig = 128 B en cero, no cargable)
-                └► fnbr-sign sign     (SHA-512 del archivo con la sección en cero,
-                                       dominio "FNBR-ELF-SIG-v1", firma Ed25519)
+gcc/ld ──► ELF ──► fnbr-sign prepare
+                ├► fnbr-sign sign      (alg=1 Ed25519 sobre SHA-512)
+                └► fnbr-sign zk-sign   (alg=2 Schnorr/Ristretto Fiat-Shamir)
 
-A) Cargador tipado (API Rust, se puede saltear desde otro proceso):
-   fnbr-load ──► verify_elf() ──► VerifiedElf ──► mmap RW → mprotect W^X → entry()
-
-B) Cumplimiento real sin BPF-LSM (seccomp USER_NOTIF, sin root):
-   fnbr-supervise <pub.hex> <programa> [args…]
-     hijo: PR_SET_NO_NEW_PRIVS + filtro seccomp (mmap/mprotect → USER_NOTIF) + execve
-     padre: lee /proc/<pid>/fd/<n>, verify_elf, CONTINUE o EPERM
+A) Cargador tipado: fnbr-load → verify_elf → VerifiedElf → mmap/mprotect W^X
+B) Cumplimiento real sin BPF-LSM: fnbr-supervise (seccomp USER_NOTIF)
 ```
-Formato de `.fnbr.sig`: `magic "FNBRSIG1" | alg u32 | flags u32 | key_id = sha256(pubkey) [32] | prueba [64] | reservado [16]`.
-- `alg=1` Ed25519 (implementado)
-- `alg=2` reservado ZK (hoy siempre se rechaza; siguiente commit)
+
+Formato `.fnbr.sig` (128 B):
+`magic "FNBRSIG1" | alg u32 | flags u32 | key_id[32] | prueba[64] | reservado[16]`.
+
+| alg | Prueba | Binding |
+|-----|--------|---------|
+| 1 | Ed25519 | SHA-512 del archivo con la sección en cero + dominio `FNBR-ELF-SIG-v1` |
+| 2 | Schnorr no interactivo sobre Ristretto255 | transcript Fiat-Shamir SHA-512(`FNBR-ZK-SCHNORR-v1` ‖ R ‖ K ‖ SHA-256(archivo con sección en cero)) |
+
+## Qué prueba el ZK (`alg=2`) — y qué no
+
+**SE prueba:** conocimiento del logaritmo discreto `k` tal que `K = k·B`
+(clave pública del publicador en Ristretto255), con el desafío atado al
+SHA-256 de este binario (sección en cero) y a `K`. Quien verifica acepta
+solo si el publicador conocía `k` para ese `K` ligado a ese hash.
+
+**NO se prueba:** corrección del programa, inocuidad, ausencia de bugs, ni
+que el binario sea “el que uno quiere”. No es una zk-SNARK/STARK del código.
+Es una prueba de conocimiento de clave atada al hash, no una prueba de
+propiedades del programa.
 
 ## Supervisor seccomp
-Intercepta `mmap` y `mprotect` con `PROT_EXEC`. Para `mmap` con archivo lee
-los bytes por el **mismo fd** (`/proc/<pid>/fd/<fd>`), no por la ruta de
-`readlink`. Niega JIT anónimo. Ver TOCTOU en `LIMITES.md`.
-
-Demo hostil: `fixtures/rawload` mapea código sin pasar por nuestro cargador.
-Bajo el supervisor, solo el ELF firmado corre.
-
-## Límites
-Ver `LIMITES.md`. Resumen: sin instalar el filtro no hay cumplimiento; BPF-LSM
-no carga en este kernel; `CONTINUE` no es un límite de seguridad absoluto;
-la firma prueba origen e integridad, no inocuidad.
+Intercepta `mmap`/`mprotect` con `PROT_EXEC`. Para `mmap` con archivo lee
+bytes por `/proc/<pid>/fd/<n>` (mismo open file). Niega JIT anónimo.
+Sin root (`NO_NEW_PRIVS`). TOCTOU de `CONTINUE`: ver `LIMITES.md`.
 
 ## Compilar y probar
 ```bash
-bash scripts/build-fixtures.sh   # guest*.elf + rawload estático
+bash scripts/build-fixtures.sh
 cargo build && cargo test && cargo clippy --all-targets -- -D warnings
 bash scripts/demo.sh
-# supervisor a mano:
-cargo run --bin fnbr-supervise -- fixtures/keys/test_pub.hex \
-  fixtures/rawload mmap-exec fixtures/guest.signed.elf
+# ZK a mano:
+cargo run --bin fnbr-sign -- zk-keygen /tmp/zk.seed /tmp/zk.pub
+cargo run --bin fnbr-sign -- zk-sign /tmp/zk.seed fixtures/guest.unsigned.elf /tmp/g.zk.elf
+cargo run --bin fnbr-sign -- zk-verify /tmp/zk.pub /tmp/g.zk.elf
 ```

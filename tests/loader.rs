@@ -6,7 +6,9 @@ use std::sync::Mutex;
 use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
 use fnbr_elf_loader::loader::{load, load_path, LoadError};
 use fnbr_elf_loader::sigsection::{self, Alg, SectionError, SigSection};
-use fnbr_elf_loader::verify::{key_id, verify_elf, Ed25519Verifier, ProofVerifier, VerifyError, ZkUnimplemented};
+use fnbr_elf_loader::verify::{key_id, verify_elf, Ed25519Verifier, ProofVerifier, VerifyError, VerifyMaterial};
+use fnbr_elf_loader::zk::{self, SchnorrKeypair, SchnorrVerifier};
+use rand::rngs::OsRng;
 
 // El invitado se mapea en una dirección fija: un solo test a la vez.
 static MAP_LOCK: Mutex<()> = Mutex::new(());
@@ -113,13 +115,53 @@ fn resign(mut bytes: Vec<u8>, alg: u32) -> Vec<u8> {
 }
 
 #[test]
-fn zk_alg_is_never_accepted() {
+fn schnorr_valid_proof_accepted() {
+    let mut rng = OsRng;
+    let kp = SchnorrKeypair::generate(&mut rng);
+    let b = zk::sign_elf(std::fs::read(fx("guest.unsigned.elf")).unwrap(), &kp, &mut rng).unwrap();
+    let v = SchnorrVerifier::new(vec![kp.public]);
+    let verified = verify_elf(b, &[&v]).expect("prueba Schnorr válida");
+    assert_eq!(verified.alg(), Alg::SchnorrRistretto);
+}
+
+#[test]
+fn schnorr_wrong_key_rejected() {
+    let mut rng = OsRng;
+    let kp = SchnorrKeypair::generate(&mut rng);
+    let other = SchnorrKeypair::generate(&mut rng);
+    let b = zk::sign_elf(std::fs::read(fx("guest.unsigned.elf")).unwrap(), &kp, &mut rng).unwrap();
+    let v = SchnorrVerifier::new(vec![other.public]);
+    assert!(matches!(verify_elf(b, &[&v]), Err(VerifyError::UnknownKey(_))));
+}
+
+#[test]
+fn schnorr_tampered_section_rejected() {
+    let mut rng = OsRng;
+    let kp = SchnorrKeypair::generate(&mut rng);
+    let mut b = zk::sign_elf(std::fs::read(fx("guest.unsigned.elf")).unwrap(), &kp, &mut rng).unwrap();
+    b[0x1000] ^= 0xff;
+    let v = SchnorrVerifier::new(vec![kp.public]);
+    assert_eq!(verify_elf(b, &[&v]).unwrap_err(), VerifyError::BadSignature);
+}
+
+#[test]
+fn schnorr_tampered_proof_rejected() {
+    let mut rng = OsRng;
+    let kp = SchnorrKeypair::generate(&mut rng);
+    let mut b = zk::sign_elf(std::fs::read(fx("guest.unsigned.elf")).unwrap(), &kp, &mut rng).unwrap();
+    let loc = sigsection::locate(&b).unwrap();
+    b[loc.offset + 48] ^= 0x01; // primer byte de R
+    let v = SchnorrVerifier::new(vec![kp.public]);
+    assert_eq!(verify_elf(b, &[&v]).unwrap_err(), VerifyError::BadSignature);
+}
+
+#[test]
+fn schnorr_without_verifier_is_no_verifier_for() {
+    let mut rng = OsRng;
+    let kp = SchnorrKeypair::generate(&mut rng);
+    let b = zk::sign_elf(std::fs::read(fx("guest.unsigned.elf")).unwrap(), &kp, &mut rng).unwrap();
     let e = ed();
-    let b = resign(std::fs::read(fx("guest.unsigned.elf")).unwrap(), Alg::ZkReserved as u32);
-    // Sin verificador ZK registrado:
-    assert_eq!(verify_elf(b.clone(), &[&e]).unwrap_err(), VerifyError::NoVerifierFor(Alg::ZkReserved));
-    // Con el marcador registrado: rechaza explícitamente, no finge.
-    assert!(matches!(verify_elf(b, &[&e, &ZkUnimplemented]), Err(VerifyError::Unsupported(_))));
+    assert_eq!(verify_elf(b, &[&e]).unwrap_err(), VerifyError::NoVerifierFor(Alg::SchnorrRistretto));
 }
 
 #[test]
@@ -143,7 +185,7 @@ fn verifier_trait_is_object_safe_and_extensible() {
         fn alg(&self) -> Alg {
             Alg::Ed25519
         }
-        fn verify(&self, _: &[u8; 64], _: &SigSection) -> Result<(), VerifyError> {
+        fn verify(&self, _: &VerifyMaterial<'_>, _: &SigSection) -> Result<(), VerifyError> {
             Err(VerifyError::BadSignature)
         }
     }

@@ -4,7 +4,7 @@
 use anyhow::{Context, Result};
 use ed25519_dalek::VerifyingKey;
 use fnbr_elf_loader::loader::{load_path, LoadError};
-use fnbr_elf_loader::verify::{Ed25519Verifier, ZkUnimplemented};
+use fnbr_elf_loader::verify::Ed25519Verifier;
 
 fn main() -> Result<()> {
     let a: Vec<String> = std::env::args().collect();
@@ -15,7 +15,7 @@ fn main() -> Result<()> {
     let pk_hex = std::fs::read_to_string(&a[1]).context("leer clave pública")?;
     let pk: [u8; 32] = hex::decode(pk_hex.trim())?.try_into().map_err(|_| anyhow::anyhow!("clave de 32 B"))?;
     let ed = Ed25519Verifier::new(vec![VerifyingKey::from_bytes(&pk)?]);
-    match load_path(std::path::Path::new(&a[2]), &[&ed, &ZkUnimplemented]) {
+    match load_path(std::path::Path::new(&a[2]), &[&ed]) {
         Ok(img) => {
             let (s, e) = img.range();
             println!("verificado y mapeado {s:#x}-{e:#x}, entry={:#x}", img.entry());

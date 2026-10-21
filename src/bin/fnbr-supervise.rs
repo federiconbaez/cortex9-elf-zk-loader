@@ -5,7 +5,7 @@
 use anyhow::{Context, Result};
 use ed25519_dalek::VerifyingKey;
 use fnbr_elf_loader::supervisor::run_supervised_verify;
-use fnbr_elf_loader::verify::{Ed25519Verifier, ZkUnimplemented};
+use fnbr_elf_loader::verify::Ed25519Verifier;
 use std::path::Path;
 
 fn main() -> Result<()> {
@@ -19,7 +19,7 @@ fn main() -> Result<()> {
     let ed = Ed25519Verifier::new(vec![VerifyingKey::from_bytes(&pk)?]);
     let prog = Path::new(&a[2]);
     let args: Vec<&str> = a[3..].iter().map(String::as_str).collect();
-    let (status, handled) = run_supervised_verify(prog, &args, &[&ed, &ZkUnimplemented])?;
+    let (status, handled) = run_supervised_verify(prog, &args, &[&ed])?;
     eprintln!("supervisor: {handled} notificaciones PROT_EXEC atendidas");
     if let Some(code) = status.code() {
         std::process::exit(code);

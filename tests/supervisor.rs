@@ -10,7 +10,7 @@ use ed25519_dalek::VerifyingKey;
 use fnbr_elf_loader::supervisor::{
     policy_verify_fnbr, run_supervised, run_supervised_verify, ExecRequest, Verdict,
 };
-use fnbr_elf_loader::verify::{Ed25519Verifier, ZkUnimplemented};
+use fnbr_elf_loader::verify::Ed25519Verifier;
 
 // El filtro seccomp + fork no se lleva bien con tests en paralelo del mismo
 // proceso; serializamos.
@@ -50,7 +50,7 @@ fn signed_elf_runs_under_supervisor_via_mmap() {
     let (st, n) = run_supervised_verify(
         &rawload(),
         &["mmap-exec", fx("guest.signed.elf").to_str().unwrap()],
-        &[&e, &ZkUnimplemented],
+        &[&e],
     )
     .expect("supervisor");
     assert_eq!(code(st), 0, "ELF firmado debe correr (entry=296)");
@@ -64,7 +64,7 @@ fn signed_elf_runs_under_supervisor_via_mprotect() {
     let (st, n) = run_supervised_verify(
         &rawload(),
         &["mprotect", fx("guest.signed.elf").to_str().unwrap()],
-        &[&e, &ZkUnimplemented],
+        &[&e],
     )
     .expect("supervisor");
     assert_eq!(code(st), 0, "mprotect→RX de firmado debe pasar");
@@ -78,7 +78,7 @@ fn unsigned_elf_mmap_denied() {
     let (st, _) = run_supervised_verify(
         &rawload(),
         &["mmap-exec", fx("guest.unsigned.elf").to_str().unwrap()],
-        &[&e, &ZkUnimplemented],
+        &[&e],
     )
     .expect("supervisor");
     assert_eq!(code(st), 3, "sin firma → mmap negado (rawload exit 3)");
@@ -91,7 +91,7 @@ fn other_key_mmap_denied() {
     let (st, _) = run_supervised_verify(
         &rawload(),
         &["mmap-exec", fx("guest.signed-otherkey.elf").to_str().unwrap()],
-        &[&e, &ZkUnimplemented],
+        &[&e],
     )
     .expect("supervisor");
     assert_eq!(code(st), 3, "otra clave → mmap negado");
@@ -110,7 +110,7 @@ fn tampered_elf_mmap_denied() {
     let (st, _) = run_supervised_verify(
         &rawload(),
         &["mmap-exec", t.to_str().unwrap()],
-        &[&e, &ZkUnimplemented],
+        &[&e],
     )
     .expect("supervisor");
     let _ = std::fs::remove_dir_all(&dir);
@@ -121,7 +121,7 @@ fn tampered_elf_mmap_denied() {
 fn anonymous_jit_denied() {
     let _g = LOCK.lock().unwrap_or_else(|e| e.into_inner());
     let e = ed();
-    let (st, n) = run_supervised_verify(&rawload(), &["anon-jit"], &[&e, &ZkUnimplemented])
+    let (st, n) = run_supervised_verify(&rawload(), &["anon-jit"], &[&e])
         .expect("supervisor");
     assert_eq!(code(st), 0, "ambos intentos JIT deben negarse (rawload exit 0)");
     assert!(n >= 1, "debió notificar PROT_EXEC anónimo, n={n}");

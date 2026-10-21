@@ -29,6 +29,9 @@ goblin = { version = "0.8", default-features = false, features = ["std", "elf32"
 libc = "0.2"
 sha2 = "0.10"
 hex = "0.4"
+curve25519-dalek = { version = "4", default-features = false, features = ["digest", "rand_core", "alloc"] }
+rand = "0.8"
+rand_core = "0.6"
 
 # El barrido de 13k bytes adulterados es lento sin optimizar las dependencias criptográficas.
 [profile.dev.package."*"]
