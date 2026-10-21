@@ -1,27 +1,22 @@
-//! Cumplimiento REAL de `PROT_EXEC` sin BPF-LSM, usando seccomp
-//! user-notification (`SECCOMP_RET_USER_NOTIF`).
+//! Cumplimiento REAL de ejecución firmada sin BPF-LSM: seccomp
+//! user-notification (`SECCOMP_RET_USER_NOTIF`) + Landlock. v0.3.
 //!
-//! Idea: el proceso supervisado instala un filtro seccomp que, en `mmap` y
-//! `mprotect`, en vez de ejecutar el syscall, **notifica** a un supervisor y
-//! espera su veredicto. El supervisor (otro proceso, sin filtro) inspecciona
-//! la notificación: si se pide `PROT_EXEC` sobre un archivo, verifica su
-//! `.fnbr.sig` leyendo los bytes vía `/proc/<pid>/fd/<fd>` (mismo open file);
-//! permite (`CONTINUE`) solo si la firma es válida, y si no devuelve `EPERM`.
-//! Todo lo que no pide `PROT_EXEC` se deja continuar. Los mapeos anónimos
-//! con `PROT_EXEC` (JIT) se niegan siempre.
+//! ## Modelo
+//! 1. `execve` con ruta se **niega** siempre.
+//! 2. Solo se permite `execveat(fd, "", AT_EMPTY_PATH)`.
+//! 3. El lanzador crea un `memfd` **sellado**
+//!    (`F_SEAL_WRITE|F_SEAL_SHRINK|F_SEAL_GROW|F_SEAL_SEAL`); el hijo hereda
+//!    el fd, instala el filtro + Landlock y hace el `execveat`. El supervisor
+//!    re-verifica el contenido del fd en el gate. Memfd sellado ⇒ sin TOCTOU.
+//! 4. `mmap`/`mprotect`/`pkey_mprotect` con `PROT_EXEC` se **niegan** siempre.
+//!    Contrato: ejecutables **estáticos** (sin `PT_INTERP`).
+//! 5. Scripts (`#!`), `PT_INTERP`, `PT_GNU_STACK` X → rechazo en el gate.
+//! 6. arch ≠ x86-64 / x32 → `KILL`. `personality(RIE)`, `mremap`/`remap_file_pages`
+//!    de VMA X, `ptrace`, `process_vm_writev`, `userfaultfd`, `seccomp`,
+//!    `prctl(PR_SET_SECCOMP)`, `io_uring_setup`, `shmat(SHM_EXEC)` → deny.
+//! 7. Landlock niega `WRITE_FILE` bajo `/proc` (cierra `/proc/<pid>/mem`).
 //!
-//! Esto SÍ frena a un proceso que intente mapear código no firmado, cosa que
-//! el cargador de `loader.rs` por sí solo no puede (otro proceso lo evita).
-//! El filtro se instala con `NO_NEW_PRIVS` y no necesita privilegios; un
-//! proceso que nunca instale el filtro no está sujeto a esto (ver LIMITES.md).
-//!
-//! ## TOCTOU / límites de `USER_NOTIF_FLAG_CONTINUE`
-//! La documentación del kernel advierte que `CONTINUE` **no** es un límite de
-//! seguridad para chequeos basados en rutas: entre el veredicto y la ejecución
-//! del syscall el mundo puede cambiar. Mitigamos leyendo el contenido por el
-//! **mismo fd** (`open(/proc/<pid>/fd/<n>)`), no por la ruta de `readlink`.
-//! Queda riesgo residual si el inode se modifica concurrentemente, o en
-//! `mprotect` (ahí solo tenemos la ruta de `/proc/<pid>/maps`). Ver LIMITES.md.
+//! Sin root (`NO_NEW_PRIVS`). Fuera de alcance: ver LIMITES.md.
 
 #![allow(clippy::missing_safety_doc)]
 
@@ -29,6 +24,7 @@ use std::ffi::{CString, OsStr};
 use std::io;
 use std::os::fd::{AsRawFd, FromRawFd, IntoRawFd, OwnedFd, RawFd};
 use std::os::unix::ffi::OsStrExt;
+use std::os::unix::fs::FileExt;
 use std::path::{Path, PathBuf};
 use std::process::ExitStatus;
 
@@ -39,8 +35,36 @@ use crate::verify::{verify_elf, ProofVerifier};
 // --- syscalls x86-64 que vigilamos ---
 pub const SYS_MMAP: u32 = 9;
 pub const SYS_MPROTECT: u32 = 10;
-const AUDIT_ARCH_X86_64: u32 = 0xC000_003E;
+pub const SYS_MREMAP: u32 = 25;
+pub const SYS_EXECVE: u32 = 59;
+pub const SYS_PTRACE: u32 = 101;
+pub const SYS_PERSONALITY: u32 = 135;
+pub const SYS_REMAP_FILE_PAGES: u32 = 216;
+pub const SYS_PROCESS_VM_WRITEV: u32 = 311;
+pub const SYS_EXECVEAT: u32 = 322;
+pub const SYS_USERFAULTFD: u32 = 323;
+pub const SYS_PKEY_MPROTECT: u32 = 329;
+// Familia de escritura: se vigilan para negar escrituras a `/proc/<pid>/mem`
+// (reescribir el propio `.text` r-x por FOLL_FORCE sortea el W^X).
+pub const SYS_WRITE: u32 = 1;
+pub const SYS_PWRITE64: u32 = 18;
+pub const SYS_WRITEV: u32 = 20;
+pub const SYS_PWRITEV: u32 = 296;
+pub const SYS_PWRITEV2: u32 = 328;
+pub const SYS_SHMAT: u32 = 30;
+pub const SYS_PRCTL: u32 = 157;
+pub const SYS_SECCOMP: u32 = 317;
+pub const SYS_IO_URING_SETUP: u32 = 425;
 
+const AUDIT_ARCH_X86_64: u32 = 0xC000_003E;
+/// Bit de syscall x32 (`__X32_SYSCALL_BIT`): mismo arch token que x86-64.
+const X32_SYSCALL_BIT: u32 = 0x4000_0000;
+/// `READ_IMPLIES_EXEC` de `<linux/personality.h>`.
+pub const READ_IMPLIES_EXEC: u64 = 0x0040_0000;
+const PR_SET_SECCOMP: u64 = 22;
+const SHM_EXEC: u64 = 0o100000;
+
+const SECCOMP_RET_KILL_PROCESS: u32 = 0x8000_0000;
 const SECCOMP_RET_ALLOW: u32 = 0x7fff_0000;
 const SECCOMP_RET_USER_NOTIF: u32 = 0x7fc0_0000;
 const SECCOMP_SET_MODE_FILTER: libc::c_ulong = 1;
@@ -92,30 +116,72 @@ pub struct SeccompNotifResp {
     pub flags: u32,
 }
 
-/// Programa cBPF: notifica `mmap`/`mprotect`, deja pasar todo lo demás.
-/// El supervisor decide según `prot`, así el filtro es simple y robusto.
-fn filter_program() -> [sock_filter; 8] {
+/// Syscalls que se notifican al supervisor (él decide).
+pub const NOTIFIED: [u32; 20] = [
+    SYS_MMAP,
+    SYS_MPROTECT,
+    SYS_PKEY_MPROTECT,
+    SYS_EXECVE,
+    SYS_EXECVEAT,
+    SYS_PERSONALITY,
+    SYS_MREMAP,
+    SYS_REMAP_FILE_PAGES,
+    SYS_PTRACE,
+    SYS_PROCESS_VM_WRITEV,
+    SYS_USERFAULTFD,
+    SYS_WRITE,
+    SYS_PWRITE64,
+    SYS_WRITEV,
+    SYS_PWRITEV,
+    SYS_PWRITEV2,
+    SYS_SHMAT,
+    SYS_PRCTL,
+    SYS_SECCOMP,
+    SYS_IO_URING_SETUP,
+];
+
+/// Programa cBPF (v0.2).
+///
+/// - `arch != AUDIT_ARCH_X86_64` (p. ej. i386 por `int $0x80`) → `KILL_PROCESS`.
+/// - `nr & __X32_SYSCALL_BIT` (x32) → `KILL_PROCESS`.
+/// - Cada syscall de [`NOTIFIED`] → `USER_NOTIF`.
+/// - Resto → `ALLOW`.
+///
+/// Los saltos de cBPF son solo hacia adelante: los `RET` van al final.
+pub fn filter_program() -> Vec<sock_filter> {
     let st = |code: u16, k: u32| sock_filter { code, jt: 0, jf: 0, k };
     let jmp = |code: u16, k: u32, jt: u8, jf: u8| sock_filter { code, jt, jf, k };
     const LD_W_ABS: u16 = 0x20;
     const JMP_JEQ_K: u16 = 0x15;
+    const JMP_JSET_K: u16 = 0x45;
     const RET_K: u16 = 0x06;
     const OFF_ARCH: u32 = 4;
     const OFF_NR: u32 = 0;
-    [
-        st(LD_W_ABS, OFF_ARCH),
-        jmp(JMP_JEQ_K, AUDIT_ARCH_X86_64, 0, 5),
-        st(LD_W_ABS, OFF_NR),
-        jmp(JMP_JEQ_K, SYS_MMAP, 2, 0),
-        jmp(JMP_JEQ_K, SYS_MPROTECT, 1, 0),
-        st(RET_K, SECCOMP_RET_ALLOW),
-        st(RET_K, SECCOMP_RET_USER_NOTIF),
-        st(RET_K, SECCOMP_RET_ALLOW),
-    ]
+
+    let n = NOTIFIED.len();
+    // Índices: 0 ld arch | 1 jeq arch | 2 ld nr | 3 jset x32 | 4..4+n jeq nr
+    //          4+n ret ALLOW | 5+n ret KILL | 6+n ret NOTIF
+    let i_allow = 4 + n;
+    let i_kill = i_allow + 1;
+    let i_notif = i_allow + 2;
+    let off = |from: usize, to: usize| -> u8 { (to - from - 1) as u8 };
+
+    let mut p = Vec::with_capacity(i_notif + 1);
+    p.push(st(LD_W_ABS, OFF_ARCH));
+    p.push(jmp(JMP_JEQ_K, AUDIT_ARCH_X86_64, 0, off(1, i_kill)));
+    p.push(st(LD_W_ABS, OFF_NR));
+    p.push(jmp(JMP_JSET_K, X32_SYSCALL_BIT, off(3, i_kill), 0));
+    for (j, nr) in NOTIFIED.iter().enumerate() {
+        let idx = 4 + j;
+        p.push(jmp(JMP_JEQ_K, *nr, off(idx, i_notif), 0));
+    }
+    p.push(st(RET_K, SECCOMP_RET_ALLOW));
+    p.push(st(RET_K, SECCOMP_RET_KILL_PROCESS));
+    p.push(st(RET_K, SECCOMP_RET_USER_NOTIF));
+    p
 }
 
 /// Instala el filtro en el proceso actual y devuelve el fd del listener.
-/// Libre de asignaciones del heap después de construir el programa.
 pub fn install_listener() -> io::Result<OwnedFd> {
     let prog = filter_program();
     let fprog = sock_fprog { len: prog.len() as u16, filter: prog.as_ptr() as *mut sock_filter };
@@ -185,7 +251,8 @@ pub fn recv_fd(sock: RawFd) -> io::Result<OwnedFd> {
     }
 }
 
-/// `prot`, `flags` y el fd de respaldo extraídos de la notificación.
+/// Pedido notificado. `prot`/`flags`/`fd`/`addr`/`len` se interpretan para
+/// `mmap`/`mprotect`/`pkey_mprotect`; `args` trae los 6 argumentos crudos.
 #[derive(Debug, Clone, Copy)]
 pub struct ExecRequest {
     pub pid: u32,
@@ -195,6 +262,7 @@ pub struct ExecRequest {
     pub fd: i32,
     pub addr: u64,
     pub len: u64,
+    pub args: [u64; 6],
 }
 
 impl ExecRequest {
@@ -210,13 +278,17 @@ impl ExecRequest {
 }
 
 fn parse(data: &SeccompData, pid: u32) -> ExecRequest {
-    // mmap(addr,len,prot,flags,fd,off); mprotect(addr,len,prot)
-    let (prot, flags, fd, len) = if data.nr == SYS_MMAP as i32 {
-        (data.args[2], data.args[3], data.args[4] as i32, data.args[1])
+    let a = data.args;
+    let nr = data.nr;
+    // mmap(addr,len,prot,flags,fd,off); mprotect/pkey_mprotect(addr,len,prot[,pkey])
+    let (prot, flags, fd) = if nr == SYS_MMAP as i32 {
+        (a[2], a[3], a[4] as i32)
+    } else if nr == SYS_MPROTECT as i32 || nr == SYS_PKEY_MPROTECT as i32 {
+        (a[2], 0, -1)
     } else {
-        (data.args[2], 0, -1, data.args[1])
+        (0, 0, -1)
     };
-    ExecRequest { pid, nr: data.nr, prot, flags, fd, addr: data.args[0], len }
+    ExecRequest { pid, nr, prot, flags, fd, addr: a[0], len: a[1], args: a }
 }
 
 /// Veredicto del supervisor para una notificación.
@@ -228,16 +300,22 @@ pub enum Verdict {
     Deny(i32),
 }
 
-/// Ruta del `readlink` de `/proc/<pid>/fd/<fd>` (solo diagnóstico; la política
-/// de verificación NO debe basarse en ella — ver TOCTOU arriba).
+/// Ruta del `readlink` de `/proc/<pid>/fd/<fd>` (solo diagnóstico).
 pub fn backing_path(pid: u32, fd: i32) -> io::Result<PathBuf> {
     std::fs::read_link(format!("/proc/{pid}/fd/{fd}"))
 }
 
-/// Lee **todos** los bytes del archivo abierto en el fd `fd` del proceso `pid`,
-/// abriendo `/proc/<pid>/fd/<fd>` (duplica el open file description).
+/// Lee **todos** los bytes del archivo abierto en el fd `fd` del proceso `pid`.
 pub fn read_via_proc_fd(pid: u32, fd: i32) -> io::Result<Vec<u8>> {
     std::fs::read(format!("/proc/{pid}/fd/{fd}"))
+}
+
+/// Lee el archivo **realmente mapeado** en la VMA `[start,end)` vía
+/// `/proc/<pid>/map_files/`. Sigue al inodo del mapeo aunque la ruta se haya
+/// renombrado (cierra el TOCTOU de ruta de `mprotect`).
+#[allow(dead_code)]
+pub fn read_via_map_files(pid: u32, start: u64, end: u64) -> io::Result<Vec<u8>> {
+    std::fs::read(format!("/proc/{pid}/map_files/{start:x}-{end:x}"))
 }
 
 /// Entrada de `/proc/<pid>/maps` que cubre `addr`.
@@ -250,11 +328,19 @@ pub struct MapEntry {
     pub path: Option<PathBuf>,
 }
 
+impl MapEntry {
+    pub fn is_writable(&self) -> bool {
+        self.perms.as_bytes().get(1) == Some(&b'w')
+    }
+    pub fn is_exec(&self) -> bool {
+        self.perms.as_bytes().get(2) == Some(&b'x')
+    }
+}
+
 /// Busca en `/proc/<pid>/maps` la VMA que contiene `addr`.
 pub fn find_vma(pid: u32, addr: u64) -> io::Result<Option<MapEntry>> {
     let text = std::fs::read_to_string(format!("/proc/{pid}/maps"))?;
     for line in text.lines() {
-        // "08048000-08049000 r-xp 00000000 08:01 173521 /usr/bin/foo"
         let mut parts = line.split_whitespace();
         let Some(range) = parts.next() else { continue };
         let Some((a, b)) = range.split_once('-') else { continue };
@@ -267,60 +353,193 @@ pub fn find_vma(pid: u32, addr: u64) -> io::Result<Option<MapEntry>> {
         let offset = u64::from_str_radix(parts.next().unwrap_or("0"), 16).unwrap_or(0);
         let _dev = parts.next();
         let _inode = parts.next();
-        let path = parts.next().and_then(|p| {
-            if p.starts_with('[') {
-                None
-            } else {
-                Some(PathBuf::from(p))
-            }
-        });
+        let path = parts.next().and_then(|p| if p.starts_with('[') { None } else { Some(PathBuf::from(p)) });
         return Ok(Some(MapEntry { start, end, perms, offset, path }));
     }
     Ok(None)
 }
 
-/// Política: permite `PROT_EXEC` solo si el archivo de respaldo verifica con
-/// los [`ProofVerifier`] dados. Niega JIT anónimo y `mprotect` sin archivo.
-pub fn policy_verify_fnbr(req: &ExecRequest, verifiers: &[&dyn ProofVerifier]) -> Verdict {
+/// ¿El string C en `ptr` del proceso `pid` está vacío? Ante error, `false`
+/// (el llamador niega).
+fn child_cstr_is_empty(pid: u32, ptr: u64) -> bool {
+    if ptr == 0 {
+        return false;
+    }
+    let Ok(f) = std::fs::File::open(format!("/proc/{pid}/mem")) else { return false };
+    let mut b = [0xffu8; 1];
+    matches!(f.read_at(&mut b, ptr), Ok(1)) && b[0] == 0
+}
+
+/// Gate de exec: solo `execveat(fd, "", AT_EMPTY_PATH)` con contenido firmado
+/// x86-64. Rechaza scripts `#!` (no son ELF firmado).
+fn policy_execveat(req: &ExecRequest, verifiers: &[&dyn ProofVerifier]) -> Verdict {
+    let dirfd = req.args[0] as i32;
+    let path_ptr = req.args[1];
+    let flags = req.args[4];
+    if flags & libc::AT_EMPTY_PATH as u64 == 0 {
+        return Verdict::Deny(libc::EACCES);
+    }
+    if !child_cstr_is_empty(req.pid, path_ptr) {
+        return Verdict::Deny(libc::EACCES);
+    }
+    let Ok(bytes) = read_via_proc_fd(req.pid, dirfd) else {
+        return Verdict::Deny(libc::EACCES);
+    };
+    if elf_exec_gate(&bytes).is_err() {
+        return Verdict::Deny(libc::EACCES);
+    }
+    match verify_elf(bytes, verifiers) {
+        Ok(_) => Verdict::Continue,
+        Err(_) => Verdict::Deny(libc::EACCES),
+    }
+}
+
+/// Chequeos estructurales del ELF en el gate de exec (antes de la firma).
+pub fn elf_exec_gate(bytes: &[u8]) -> Result<(), &'static str> {
+    if bytes.starts_with(b"#!") {
+        return Err("script");
+    }
+    if bytes.len() < 64 || &bytes[0..4] != b"\x7fELF" || bytes[4] != 2 {
+        return Err("no ELF64");
+    }
+    if u16::from_le_bytes([bytes[18], bytes[19]]) != 62 {
+        return Err("no x86-64");
+    }
+    let phoff = u64::from_le_bytes(bytes[32..40].try_into().unwrap()) as usize;
+    let phentsize = u16::from_le_bytes(bytes[54..56].try_into().unwrap()) as usize;
+    let phnum = u16::from_le_bytes(bytes[56..58].try_into().unwrap()) as usize;
+    if phentsize < 56 || phnum == 0 {
+        return Err("phdrs");
+    }
+    let Some(end) = phoff.checked_add(phentsize.saturating_mul(phnum)) else {
+        return Err("phdrs overflow");
+    };
+    let Some(phdrs) = bytes.get(phoff..end) else {
+        return Err("phdrs oob");
+    };
+    for ph in phdrs.chunks(phentsize) {
+        if ph.len() < 8 {
+            continue;
+        }
+        let p_type = u32::from_le_bytes(ph[0..4].try_into().unwrap());
+        let flags = u32::from_le_bytes(ph[4..8].try_into().unwrap());
+        if p_type == 3 {
+            return Err("PT_INTERP");
+        }
+        if p_type == 1 && (flags & 1) != 0 && (flags & 2) != 0 {
+            return Err("PT_LOAD W+X");
+        }
+        if p_type == 0x6474e551 && (flags & 1) != 0 {
+            return Err("PT_GNU_STACK X");
+        }
+    }
+    Ok(())
+}
+fn policy_mmap(req: &ExecRequest, _verifiers: &[&dyn ProofVerifier]) -> Verdict {
     if !req.wants_exec() {
         return Verdict::Continue;
     }
-    let bytes = if req.nr == SYS_MMAP as i32 {
-        if req.is_anonymous_mmap() {
-            return Verdict::Deny(libc::EPERM);
-        }
-        if !req.is_file_backed_mmap() {
-            return Verdict::Deny(libc::EPERM);
-        }
-        match read_via_proc_fd(req.pid, req.fd) {
-            Ok(b) => b,
-            Err(_) => return Verdict::Deny(libc::EPERM),
-        }
-    } else if req.nr == SYS_MPROTECT as i32 {
-        // mprotect: solo tenemos la VMA. Riesgo TOCTOU path-based (documentado).
-        let vma = match find_vma(req.pid, req.addr) {
-            Ok(Some(v)) => v,
-            _ => return Verdict::Deny(libc::EPERM),
-        };
-        let Some(path) = vma.path else {
-            return Verdict::Deny(libc::EPERM);
-        };
-        match std::fs::read(&path) {
-            Ok(b) => b,
-            Err(_) => return Verdict::Deny(libc::EPERM),
-        }
-    } else {
-        return Verdict::Deny(libc::EPERM);
-    };
+    // W^X estricto: NINGÚN `mmap(PROT_EXEC)` de usuario se concede. El único
+    // código ejecutable nace del `execveat` del memfd sellado. Un CONTINUE
+    // sobre file-backed sería TOCTOU (archivo mutable por un 2º fd).
+    Verdict::Deny(libc::EPERM)
+}
 
-    match verify_elf(bytes, verifiers) {
-        Ok(_) => Verdict::Continue,
-        Err(_) => Verdict::Deny(libc::EPERM),
+fn policy_mprotect(req: &ExecRequest, _verifiers: &[&dyn ProofVerifier]) -> Verdict {
+    if !req.wants_exec() {
+        return Verdict::Continue;
+    }
+    // Nunca se puede volver ejecutable una página ya mapeada.
+    Verdict::Deny(libc::EPERM)
+}
+
+/// ¿La ruta canónica es `/proc/<pid|self|thread-self>/[task/<tid>/]mem`?
+/// El `readlink` de un fd da la ruta canónica aunque se haya abierto por un
+/// symlink, así que el chequeo es robusto a trucos de enlace.
+pub fn is_proc_mem_path(p: &Path) -> bool {
+    let c: Vec<&OsStr> = p.iter().collect();
+    let as_str = |o: &OsStr| o.to_str().map(|s| s.to_string());
+    let is_pid = |o: &OsStr| matches!(as_str(o).as_deref(), Some("self") | Some("thread-self"))
+        || o.to_str().map(|s| !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit())).unwrap_or(false);
+    // ["/", "proc", <pid>, "mem"]  o  ["/", "proc", <pid>, "task", <tid>, "mem"]
+    match c.as_slice() {
+        [root, proc, pid, mem]
+            if *root == OsStr::new("/") && *proc == OsStr::new("proc") && *mem == OsStr::new("mem") =>
+        {
+            is_pid(pid)
+        }
+        [root, proc, pid, task, tid, mem]
+            if *root == OsStr::new("/")
+                && *proc == OsStr::new("proc")
+                && *task == OsStr::new("task")
+                && *mem == OsStr::new("mem") =>
+        {
+            is_pid(pid) && is_pid(tid)
+        }
+        _ => false,
+    }
+}
+
+/// Niega escrituras cuyo fd destino resuelve a `/proc/<pid>/mem` (reescribir el
+/// propio `.text` r-x por FOLL_FORCE). Cualquier otro destino (stdout, pipes,
+/// archivos de datos) pasa. Ante error de `readlink` (fd sin ruta: pipe/socket)
+/// se permite: no es la superficie peligrosa.
+pub fn policy_write(req: &ExecRequest) -> Verdict {
+    let fd = req.args[0] as i64;
+    if fd < 0 {
+        return Verdict::Continue;
+    }
+    match backing_path(req.pid, fd as i32) {
+        Ok(p) if is_proc_mem_path(&p) => Verdict::Deny(libc::EACCES),
+        _ => Verdict::Continue,
+    }
+}
+
+/// Política completa v0.2 (ver doc del módulo).
+pub fn policy_verify_fnbr(req: &ExecRequest, verifiers: &[&dyn ProofVerifier]) -> Verdict {
+    let nr = req.nr as u32;
+    match nr {
+        SYS_EXECVE => Verdict::Deny(libc::EACCES),
+        SYS_EXECVEAT => policy_execveat(req, verifiers),
+        SYS_MMAP => policy_mmap(req, verifiers),
+        SYS_MPROTECT | SYS_PKEY_MPROTECT => policy_mprotect(req, verifiers),
+        SYS_PERSONALITY => {
+            let p = req.args[0];
+            if p != 0xffff_ffff && p != u64::MAX && p & READ_IMPLIES_EXEC != 0 {
+                Verdict::Deny(libc::EPERM)
+            } else {
+                Verdict::Continue
+            }
+        }
+        SYS_MREMAP | SYS_REMAP_FILE_PAGES => match find_vma(req.pid, req.args[0]) {
+            Ok(Some(v)) if v.is_exec() => Verdict::Deny(libc::EPERM),
+            Ok(_) => Verdict::Continue,
+            Err(_) => Verdict::Deny(libc::EPERM),
+        },
+        SYS_PTRACE | SYS_PROCESS_VM_WRITEV | SYS_USERFAULTFD | SYS_SECCOMP | SYS_IO_URING_SETUP => {
+            Verdict::Deny(libc::EPERM)
+        }
+        SYS_PRCTL => {
+            if req.args[0] == PR_SET_SECCOMP {
+                Verdict::Deny(libc::EPERM)
+            } else {
+                Verdict::Continue
+            }
+        }
+        SYS_SHMAT => {
+            if req.args[2] & SHM_EXEC != 0 {
+                Verdict::Deny(libc::EPERM)
+            } else {
+                Verdict::Continue
+            }
+        }
+        SYS_WRITE | SYS_PWRITE64 | SYS_WRITEV | SYS_PWRITEV | SYS_PWRITEV2 => policy_write(req),
+        _ => Verdict::Continue,
     }
 }
 
 /// Atiende notificaciones hasta que `keep_going()` sea falso y no haya más
-/// pendientes. `policy` decide cada pedido de `PROT_EXEC`.
+/// pendientes. `policy` decide **cada** syscall notificado.
 pub fn supervise<P, K>(listener: &OwnedFd, mut policy: P, keep_going: K) -> io::Result<u64>
 where
     P: FnMut(&ExecRequest) -> Verdict,
@@ -348,6 +567,13 @@ where
             }
             continue;
         }
+        if pfd.revents & (libc::POLLHUP | libc::POLLERR) != 0 && pfd.revents & libc::POLLIN == 0 {
+            // Todos los procesos con el filtro terminaron.
+            if !keep_going() {
+                return Ok(handled);
+            }
+            continue;
+        }
 
         let mut req: SeccompNotif = unsafe { std::mem::zeroed() };
         if unsafe { libc::ioctl(lfd, recv, &mut req) } != 0 {
@@ -362,11 +588,7 @@ where
         }
 
         let er = parse(&req.data, req.pid);
-        let verdict = if er.wants_exec() {
-            policy(&er)
-        } else {
-            Verdict::Continue
-        };
+        let verdict = policy(&er);
 
         let mut resp = SeccompNotifResp { id: req.id, val: 0, error: 0, flags: 0 };
         match verdict {
@@ -383,27 +605,154 @@ where
             }
             return Err(e);
         }
-        handled += 1;
+        if er.wants_exec() || matches!(er.nr as u32, SYS_EXECVE | SYS_EXECVEAT) {
+            handled += 1;
+        }
     }
 }
 
+
+// --- Landlock: niega WRITE_FILE bajo /proc (cierra /proc/<pid>/mem) ---
+
+#[repr(C)]
+struct LandlockRulesetAttr {
+    handled_access_fs: u64,
+}
+const LANDLOCK_ACCESS_FS_WRITE_FILE: u64 = 1 << 1;
+const LANDLOCK_RULE_PATH_BENEATH: i32 = 1;
+#[repr(C)]
+struct LandlockPathBeneathAttr {
+    allowed_access: u64,
+    parent_fd: i32,
+}
+
+/// Instala Landlock: permite `WRITE_FILE` en entradas de `/` excepto `proc`.
+pub fn install_landlock_deny_proc_write() -> io::Result<()> {
+    let attr = LandlockRulesetAttr { handled_access_fs: LANDLOCK_ACCESS_FS_WRITE_FILE };
+    let rf = unsafe {
+        libc::syscall(
+            libc::SYS_landlock_create_ruleset,
+            &attr as *const _ as *const c_void,
+            std::mem::size_of::<LandlockRulesetAttr>(),
+            0u32,
+        )
+    };
+    if rf < 0 {
+        return Err(io::Error::last_os_error());
+    }
+    let rf = rf as RawFd;
+    for ent in std::fs::read_dir("/")? {
+        let ent = ent?;
+        if ent.file_name() == OsStr::new("proc") {
+            continue;
+        }
+        let path = ent.path();
+        let cpath = CString::new(path.as_os_str().as_bytes())
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e))?;
+        let fd = unsafe { libc::open(cpath.as_ptr(), libc::O_PATH | libc::O_CLOEXEC) };
+        if fd < 0 {
+            continue;
+        }
+        let pb = LandlockPathBeneathAttr {
+            allowed_access: LANDLOCK_ACCESS_FS_WRITE_FILE,
+            parent_fd: fd,
+        };
+        let _ = unsafe {
+            libc::syscall(
+                libc::SYS_landlock_add_rule,
+                rf as libc::c_long,
+                LANDLOCK_RULE_PATH_BENEATH as libc::c_long,
+                &pb as *const _ as *const c_void,
+                0u32,
+            )
+        };
+        unsafe { libc::close(fd) };
+    }
+    let r = unsafe { libc::syscall(libc::SYS_landlock_restrict_self, rf as libc::c_long, 0u32) };
+    unsafe { libc::close(rf) };
+    if r != 0 {
+        return Err(io::Error::last_os_error());
+    }
+    Ok(())
+}
+
+/// Crea un `memfd` con `bytes` y lo sella contra escritura, crecimiento,
+/// achique y nuevos sellos. Lo que se ejecute desde ahí es inmutable.
+pub fn create_sealed_memfd(bytes: &[u8]) -> io::Result<OwnedFd> {
+    let name = CString::new("fnbr-verified").expect("nombre sin NUL");
+    let fd = unsafe { libc::memfd_create(name.as_ptr(), libc::MFD_ALLOW_SEALING) };
+    if fd < 0 {
+        return Err(io::Error::last_os_error());
+    }
+    let owned = unsafe { OwnedFd::from_raw_fd(fd) };
+    let mut off = 0usize;
+    while off < bytes.len() {
+        let n = unsafe { libc::write(fd, bytes[off..].as_ptr() as *const c_void, bytes.len() - off) };
+        if n < 0 {
+            let e = io::Error::last_os_error();
+            if e.raw_os_error() == Some(libc::EINTR) {
+                continue;
+            }
+            return Err(e);
+        }
+        off += n as usize;
+    }
+    let seals = libc::F_SEAL_SEAL | libc::F_SEAL_SHRINK | libc::F_SEAL_GROW | libc::F_SEAL_WRITE;
+    if unsafe { libc::fcntl(fd, libc::F_ADD_SEALS, seals) } != 0 {
+        return Err(io::Error::last_os_error());
+    }
+    Ok(owned)
+}
+
+/// Sellos actuales de un fd (`F_GET_SEALS`).
+pub fn get_seals(fd: RawFd) -> io::Result<i32> {
+    let r = unsafe { libc::fcntl(fd, libc::F_GET_SEALS) };
+    if r < 0 {
+        Err(io::Error::last_os_error())
+    } else {
+        Ok(r)
+    }
+}
+
+extern "C" {
+    static environ: *const *const libc::c_char;
+}
+
 /// Lanza `program`+`args` bajo el filtro seccomp y aplica `policy` a cada
-/// pedido de `PROT_EXEC`. Sin privilegios (`NO_NEW_PRIVS`).
+/// syscall notificado. Sin privilegios (`NO_NEW_PRIVS`).
 ///
-/// El hijo instala el filtro, manda el listener por un socketpair, hace
-/// `execve` del programa y queda sujeto al filtro (persiste tras el exec).
+/// v0.2: el padre copia `program` a un `memfd` sellado; el hijo instala el
+/// filtro y hace `execveat(memfd, "", AT_EMPTY_PATH)`. Ese exec también pasa
+/// por `policy` (con [`policy_verify_fnbr`], el contenido debe verificar).
 pub fn run_supervised(
     program: &Path,
     args: &[impl AsRef<OsStr>],
     mut policy: impl FnMut(&ExecRequest) -> Verdict,
 ) -> io::Result<(ExitStatus, u64)> {
+    let bytes = std::fs::read(program)?;
+    let mfd = create_sealed_memfd(&bytes)?;
+    let mfd_raw = mfd.as_raw_fd();
+
+    // argv armado antes del fork (el hijo no asigna memoria).
+    let prog = CString::new(program.as_os_str().as_bytes())
+        .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "NUL en la ruta"))?;
+    let mut c_args: Vec<CString> = Vec::with_capacity(args.len() + 1);
+    c_args.push(prog);
+    for a in args {
+        c_args.push(
+            CString::new(a.as_ref().as_bytes())
+                .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "NUL en argumento"))?,
+        );
+    }
+    let mut ptrs: Vec<*const libc::c_char> = c_args.iter().map(|c| c.as_ptr()).collect();
+    ptrs.push(std::ptr::null());
+    let empty: &[u8; 1] = b"\0";
+
     let mut sv = [0i32; 2];
-    if unsafe { libc::socketpair(libc::AF_UNIX, libc::SOCK_STREAM, 0, sv.as_mut_ptr()) } != 0 {
+    if unsafe { libc::socketpair(libc::AF_UNIX, libc::SOCK_STREAM | libc::SOCK_CLOEXEC, 0, sv.as_mut_ptr()) } != 0 {
         return Err(io::Error::last_os_error());
     }
-    let (parent_sock, child_sock) = unsafe {
-        (OwnedFd::from_raw_fd(sv[0]), OwnedFd::from_raw_fd(sv[1]))
-    };
+    let (parent_sock, child_sock) = unsafe { (OwnedFd::from_raw_fd(sv[0]), OwnedFd::from_raw_fd(sv[1])) };
 
     let pid = unsafe { libc::fork() };
     if pid < 0 {
@@ -421,20 +770,18 @@ pub fn run_supervised(
         }
         drop(listener);
         drop(child_sock);
-
-        let prog = CString::new(program.as_os_str().as_bytes()).unwrap_or_else(|_| unsafe { libc::_exit(92) });
-        let mut c_args: Vec<CString> = Vec::with_capacity(args.len() + 1);
-        c_args.push(prog.clone());
-        for a in args {
-            match CString::new(a.as_ref().as_bytes()) {
-                Ok(c) => c_args.push(c),
-                Err(_) => unsafe { libc::_exit(92) },
-            }
+        if install_landlock_deny_proc_write().is_err() {
+            unsafe { libc::_exit(94) };
         }
-        let mut ptrs: Vec<*const libc::c_char> = c_args.iter().map(|c| c.as_ptr()).collect();
-        ptrs.push(std::ptr::null());
         unsafe {
-            libc::execv(prog.as_ptr(), ptrs.as_ptr());
+            libc::syscall(
+                libc::SYS_execveat,
+                mfd_raw as libc::c_long,
+                empty.as_ptr(),
+                ptrs.as_ptr(),
+                environ,
+                libc::AT_EMPTY_PATH as libc::c_long,
+            );
             libc::_exit(93);
         }
     }
@@ -442,31 +789,24 @@ pub fn run_supervised(
     // --- padre ---
     drop(child_sock);
     let listener = recv_fd(parent_sock.as_raw_fd())?;
-    // Evita que un drop temprano cierre el sock mientras supervisamos.
     let _keep = parent_sock;
+    let _keep_mfd = mfd;
 
     let child_pid = pid;
-    // `keep_going` puede cosechar al hijo con WNOHANG; guardamos el status
-    // para no llamar waitpid dos veces (ECHILD).
     let reaped = std::sync::Mutex::new(None::<i32>);
-    let handled = supervise(
-        &listener,
-        &mut policy,
-        || {
-            let mut guard = reaped.lock().unwrap();
-            if guard.is_some() {
-                return false;
-            }
-            let mut st = 0;
-            let r = unsafe { libc::waitpid(child_pid, &mut st, libc::WNOHANG) };
-            if r == child_pid {
-                *guard = Some(st);
-                return false;
-            }
-            // r==0 → vivo; r<0 → error transitorio, seguimos un poco más
-            true
-        },
-    )?;
+    let handled = supervise(&listener, &mut policy, || {
+        let mut guard = reaped.lock().unwrap();
+        if guard.is_some() {
+            return false;
+        }
+        let mut st = 0;
+        let r = unsafe { libc::waitpid(child_pid, &mut st, libc::WNOHANG) };
+        if r == child_pid {
+            *guard = Some(st);
+            return false;
+        }
+        true
+    })?;
 
     let status = {
         let guard = reaped.lock().unwrap();
@@ -494,8 +834,7 @@ pub fn run_supervised_verify(
     run_supervised(program, args, |req| policy_verify_fnbr(req, verifiers))
 }
 
-/// Variante que no retiene el sock del padre más de lo necesario; expone el
-/// listener crudo para tests que quieran controlar el bucle a mano.
+/// Expone el listener crudo para tests que quieran controlar el bucle a mano.
 #[allow(dead_code)]
 pub(crate) fn into_raw_listener_for_tests(fd: OwnedFd) -> RawFd {
     fd.into_raw_fd()
@@ -508,8 +847,17 @@ mod tests {
     #[test]
     fn filter_has_expected_shape() {
         let p = filter_program();
-        assert_eq!(p.len(), 8);
-        assert_eq!(p[6].k, SECCOMP_RET_USER_NOTIF);
+        let n = NOTIFIED.len();
+        assert_eq!(p.len(), 4 + n + 3);
+        assert_eq!(p[4 + n].k, SECCOMP_RET_ALLOW);
+        assert_eq!(p[5 + n].k, SECCOMP_RET_KILL_PROCESS);
+        assert_eq!(p[6 + n].k, SECCOMP_RET_USER_NOTIF);
+        // arch ≠ x86-64 salta a KILL; x32 salta a KILL; cada nr salta a NOTIF
+        assert_eq!(1 + 1 + p[1].jf as usize, 5 + n);
+        assert_eq!(3 + 1 + p[3].jt as usize, 5 + n);
+        for j in 0..n {
+            assert_eq!(4 + j + 1 + p[4 + j].jt as usize, 6 + n);
+        }
         assert_eq!(SECCOMP_FILTER_FLAG_NEW_LISTENER, 1 << 3);
     }
 
@@ -553,12 +901,50 @@ mod tests {
                 4096,
                 (libc::PROT_READ | libc::PROT_WRITE | libc::PROT_EXEC) as u64,
                 (libc::MAP_PRIVATE | libc::MAP_ANONYMOUS) as u64,
-                u64::MAX, // fd=-1
+                u64::MAX,
                 0,
             ],
         };
         let er = parse(&data, 1);
         assert!(er.wants_exec());
         assert!(er.is_anonymous_mmap());
+    }
+
+    #[test]
+    fn pkey_mprotect_parsed_as_mprotect() {
+        let data = SeccompData {
+            nr: SYS_PKEY_MPROTECT as i32,
+            arch: AUDIT_ARCH_X86_64,
+            instruction_pointer: 0,
+            args: [0x1000, 4096, (libc::PROT_READ | libc::PROT_EXEC) as u64, u64::MAX, 0, 0],
+        };
+        let er = parse(&data, 1);
+        assert!(er.wants_exec());
+    }
+
+    #[test]
+    fn execve_with_path_always_denied() {
+        let req = ExecRequest { pid: 1, nr: SYS_EXECVE as i32, prot: 0, flags: 0, fd: -1, addr: 0, len: 0, args: [0; 6] };
+        assert_eq!(policy_verify_fnbr(&req, &[]), Verdict::Deny(libc::EACCES));
+    }
+
+    #[test]
+    fn personality_rie_denied_query_allowed() {
+        let mk = |a0: u64| ExecRequest {
+            pid: 1, nr: SYS_PERSONALITY as i32, prot: 0, flags: 0, fd: -1, addr: a0, len: 0, args: [a0, 0, 0, 0, 0, 0],
+        };
+        assert_eq!(policy_verify_fnbr(&mk(READ_IMPLIES_EXEC), &[]), Verdict::Deny(libc::EPERM));
+        assert_eq!(policy_verify_fnbr(&mk(0xffff_ffff), &[]), Verdict::Continue);
+        assert_eq!(policy_verify_fnbr(&mk(0), &[]), Verdict::Continue);
+    }
+
+    #[test]
+    fn sealed_memfd_rejects_writes() {
+        let fd = create_sealed_memfd(b"\x7fELF-test").unwrap();
+        let seals = get_seals(fd.as_raw_fd()).unwrap();
+        let want = libc::F_SEAL_SEAL | libc::F_SEAL_SHRINK | libc::F_SEAL_GROW | libc::F_SEAL_WRITE;
+        assert_eq!(seals & want, want);
+        let n = unsafe { libc::pwrite(fd.as_raw_fd(), b"X".as_ptr() as *const c_void, 1, 0) };
+        assert_eq!(n, -1, "escritura sobre memfd sellado debe fallar");
     }
 }

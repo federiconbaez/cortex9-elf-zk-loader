@@ -1,6 +1,6 @@
 //! fnbr-supervise <pub.hex> <programa> [args…]:
-//! lanza `programa` bajo seccomp USER_NOTIF y solo permite PROT_EXEC si el
-//! archivo de respaldo verifica con la clave Ed25519 dada.
+//! lanza `programa` bajo seccomp USER_NOTIF + Landlock (v0.3):
+//! memfd sellado + execveat; solo ELF estático firmado.
 
 use anyhow::{Context, Result};
 use ed25519_dalek::VerifyingKey;
@@ -20,7 +20,7 @@ fn main() -> Result<()> {
     let prog = Path::new(&a[2]);
     let args: Vec<&str> = a[3..].iter().map(String::as_str).collect();
     let (status, handled) = run_supervised_verify(prog, &args, &[&ed])?;
-    eprintln!("supervisor: {handled} notificaciones PROT_EXEC atendidas");
+    eprintln!("supervisor: {handled} notificaciones atendidas");
     if let Some(code) = status.code() {
         std::process::exit(code);
     }
