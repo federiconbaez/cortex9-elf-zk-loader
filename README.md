@@ -30,6 +30,8 @@ Formato `.fnbr.sig` (128 B):
 SHA-256 de este binario (sección en cero) y a `K`. Quien verifica acepta
 solo si el publicador conocía `k` para ese `K` ligado a ese hash.
 
+**Dicho sin rodeos:** un Schnorr Fiat-Shamir atado a un mensaje es, matemáticamente, una **firma Schnorr**. Es zero-knowledge respecto de la clave secreta `k`, y solo prueba que el dueño de `K` respaldó este hash.
+
 **NO se prueba:** corrección del programa, inocuidad, ausencia de bugs, ni
 que el binario sea “el que uno quiere”. No es una zk-SNARK/STARK del código.
 Es una prueba de conocimiento de clave atada al hash, no una prueba de
