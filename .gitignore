@@ -3,3 +3,7 @@ bpf/vmlinux.h
 *.o
 fixtures/rawload
 fixtures/guest.raw.elf
+fixtures/guest.signed-otherkey.elf
+fixtures/guest.signed.elf
+fixtures/guest.unsigned.elf
+experimento/out/
