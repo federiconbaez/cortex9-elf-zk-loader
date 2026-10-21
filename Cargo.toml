@@ -18,6 +18,10 @@ path = "src/bin/fnbr-sign.rs"
 name = "fnbr-load"
 path = "src/bin/fnbr-load.rs"
 
+[[bin]]
+name = "fnbr-supervise"
+path = "src/bin/fnbr-supervise.rs"
+
 [dependencies]
 anyhow = "1"
 ed25519-dalek = "2"

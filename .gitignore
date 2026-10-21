@@ -1,3 +1,5 @@
 target/
 bpf/vmlinux.h
 *.o
+fixtures/rawload
+fixtures/guest.raw.elf

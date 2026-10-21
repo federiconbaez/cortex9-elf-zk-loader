@@ -4,12 +4,19 @@ Cuenta como **aprobado** solo si se cumplen todos:
 
 1. `cargo build` y `cargo clippy --all-targets -- -D warnings` sin errores ni warnings.
 2. `cargo test` en verde, incluyendo:
-   - `signed_fixture_loads_and_runs`: el ELF firmado se mapea con W^X y su entry devuelve 296.
-   - `unsigned_fixture_refused_without_mapping`: sin firma → `Refused`, y no queda nada mapeado.
-   - `other_key_refused`, `tampered_text_is_bad_signature`, `tampered_signature_bytes_rejected`.
-   - `every_single_byte_flip_outside_sig_is_rejected`: ningún byte adulterado pasa.
-   - `zk_alg_is_never_accepted`: el marcador ZK v0.1 nunca acepta.
+   - Cargador: `signed_fixture_loads_and_runs`, `unsigned_fixture_refused_without_mapping`,
+     `other_key_refused`, `tampered_*`, `every_single_byte_flip_outside_sig_is_rejected`,
+     `zk_alg_is_never_accepted`.
+   - Supervisor: `signed_elf_runs_under_supervisor_via_mmap`,
+     `signed_elf_runs_under_supervisor_via_mprotect`,
+     `unsigned_elf_mmap_denied`, `other_key_mmap_denied`, `tampered_elf_mmap_denied`,
+     `anonymous_jit_denied`.
 3. `bash scripts/demo.sh` imprime `RESULTADO: PASS`.
 
-**No** se afirma: cumplimiento en kernel vía BPF-LSM, ni que un proceso fuera
-del supervisor no pueda saltearse el cargador.
+**Se afirma (con evidencia de tests):** un proceso lanzado bajo
+`fnbr-supervise` / `run_supervised` no obtiene `PROT_EXEC` sobre un ELF sin
+firma válida ni sobre memoria anónima (JIT), sin necesidad de root ni BPF-LSM.
+
+**No** se afirma: perímetro de kernel vía BPF-LSM; que `CONTINUE` elimine
+todo TOCTOU; ni que un proceso fuera del supervisor no pueda saltearse el
+cargador tipado.
