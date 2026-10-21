@@ -6,4 +6,5 @@ fixtures/guest.raw.elf
 fixtures/guest.signed-otherkey.elf
 fixtures/guest.signed.elf
 fixtures/guest.unsigned.elf
+# crudo de trabajo local; la remedición versiona experimento/valor/
 experimento/out/

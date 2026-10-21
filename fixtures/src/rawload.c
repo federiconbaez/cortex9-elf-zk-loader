@@ -67,7 +67,14 @@ static int load_and_run(const char *path, int via_mprotect)
     long (*entry)(void) = (long (*)(void))eh.e_entry;
     long r = entry();
     printf("entry=%ld\n", r);
-    return r == 296 ? 0 : 2;
+    /* v0.3: sin expectativa fija de 296 (rompe FPR con guests distintos).
+     * Si RAWLOAD_EXPECT está definido en el entorno, se compara; si no, 0=corrió. */
+    const char *exp = getenv("RAWLOAD_EXPECT");
+    if (exp) {
+        long want = strtol(exp, NULL, 10);
+        return r == want ? 0 : 2;
+    }
+    return 0;
 }
 
 static int anon_jit(void)
