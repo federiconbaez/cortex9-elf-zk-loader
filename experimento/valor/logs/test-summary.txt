@@ -1,0 +1,53 @@
+
+running 17 tests
+.................
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 16 tests
+.............preparado /tmp/fnbr9-2822930/me.prepared (sección .fnbr.sig en cero, sin firmar)
+...
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.87s
+
+
+running 23 tests
+.preparado /tmp/fnbr9-it-2823000/harness.u (sección .fnbr.sig en cero, sin firmar)
+firmado Ed25519 /tmp/fnbr9-it-2823000/harness.signed key_id=fae7e4cd3316f2728710e3dbe4f15eb7dc257e1a149b011bc0b76868723880bd
+mprotect RX: errno=1 (bloqueado)
+.preparado /tmp/fnbr9-it-2823000/hello.u (sección .fnbr.sig en cero, sin firmar)
+firmado Ed25519 /tmp/fnbr9-it-2823000/hello.signed key_id=fae7e4cd3316f2728710e3dbe4f15eb7dc257e1a149b011bc0b76868723880bd
+mmap SHARED exec: errno=1 (bloqueado)
+.fexecve memfd: errno=13 (bloqueado)
+..pkey_mprotect errno=1 (bloqueado)
+.......open /proc/self/mem errno=13 (bloqueado)
+..personality: errno=1 (bloqueado)
+.preparado /tmp/fnbr9-it-2823000/wrongkey.u (sección .fnbr.sig en cero, sin firmar)
+firmado Ed25519 /tmp/fnbr9-it-2823000/wrongkey.signed key_id=6287655b4ba2843da6be836848d7e2f617cacdfda1e2ae802851c59c35b526d6
+.userfaultfd errno=1 (bloqueado)
+.process_vm_writev errno=1 (bloqueado)
+..OK
+.ptrace ATTACH errno=1 (bloqueado)
+..mprotect RX: errno=1 (bloqueado)
+.
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

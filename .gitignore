@@ -8,3 +8,7 @@ fixtures/guest.signed.elf
 fixtures/guest.unsigned.elf
 # crudo de trabajo local; la remedición versiona experimento/valor/
 experimento/out/
+experimento/valor/valid/
+experimento/valor/attacks/
+experimento/valor/tmp/
+experimento/valor/baseline/

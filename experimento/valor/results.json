@@ -1,0 +1,2053 @@
+{
+  "valid_loader": [
+    {
+      "id": "guest-000",
+      "ok": true,
+      "rc": 0,
+      "ms": 1.323
+    },
+    {
+      "id": "guest-001",
+      "ok": true,
+      "rc": 0,
+      "ms": 1.032
+    },
+    {
+      "id": "guest-002",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.96
+    },
+    {
+      "id": "guest-003",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.959
+    },
+    {
+      "id": "guest-004",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.744
+    },
+    {
+      "id": "guest-005",
+      "ok": true,
+      "rc": 0,
+      "ms": 1.094
+    },
+    {
+      "id": "guest-006",
+      "ok": true,
+      "rc": 0,
+      "ms": 1.216
+    },
+    {
+      "id": "guest-007",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.982
+    },
+    {
+      "id": "guest-008",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.975
+    },
+    {
+      "id": "guest-009",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.77
+    },
+    {
+      "id": "guest-010",
+      "ok": true,
+      "rc": 0,
+      "ms": 1.024
+    },
+    {
+      "id": "guest-011",
+      "ok": true,
+      "rc": 0,
+      "ms": 1.052
+    },
+    {
+      "id": "guest-012",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.922
+    },
+    {
+      "id": "guest-013",
+      "ok": true,
+      "rc": 0,
+      "ms": 1.095
+    },
+    {
+      "id": "guest-014",
+      "ok": true,
+      "rc": 0,
+      "ms": 1.075
+    },
+    {
+      "id": "guest-015",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.959
+    },
+    {
+      "id": "guest-016",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.746
+    },
+    {
+      "id": "guest-017",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.992
+    },
+    {
+      "id": "guest-018",
+      "ok": true,
+      "rc": 0,
+      "ms": 1.08
+    },
+    {
+      "id": "guest-019",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.97
+    },
+    {
+      "id": "guest-020",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.849
+    },
+    {
+      "id": "guest-021",
+      "ok": true,
+      "rc": 0,
+      "ms": 1.229
+    },
+    {
+      "id": "guest-022",
+      "ok": true,
+      "rc": 0,
+      "ms": 1.3
+    },
+    {
+      "id": "guest-023",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.914
+    },
+    {
+      "id": "guest-024",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.741
+    },
+    {
+      "id": "guest-025",
+      "ok": true,
+      "rc": 0,
+      "ms": 1.003
+    },
+    {
+      "id": "guest-026",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.736
+    },
+    {
+      "id": "guest-027",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.745
+    },
+    {
+      "id": "guest-028",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.759
+    },
+    {
+      "id": "guest-029",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.763
+    },
+    {
+      "id": "guest-030",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.993
+    },
+    {
+      "id": "guest-031",
+      "ok": true,
+      "rc": 0,
+      "ms": 1.007
+    },
+    {
+      "id": "guest-032",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.944
+    },
+    {
+      "id": "guest-033",
+      "ok": true,
+      "rc": 0,
+      "ms": 1.209
+    },
+    {
+      "id": "guest-034",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.966
+    },
+    {
+      "id": "guest-035",
+      "ok": true,
+      "rc": 0,
+      "ms": 0.981
+    },
+    {
+      "id": "guest-036",
+      "ok": true,
+      "rc": 0,
+      "ms": 1.028
+    },
+    {
+      "id": "guest-037",
+      "ok": true,
+      "rc": 0,
+      "ms": 1.204
+    },
+    {
+      "id": "guest-038",
+      "ok": true,
+      "rc": 0,
+      "ms": 1.236
+    },
+    {
+      "id": "guest-039",
+      "ok": true,
+      "rc": 0,
+      "ms": 1.06
+    }
+  ],
+  "valid_supervisor": [
+    {
+      "id": "static-s00",
+      "ok": true,
+      "rc": 0,
+      "expect": 0
+    },
+    {
+      "id": "static-s01",
+      "ok": true,
+      "rc": 1,
+      "expect": 1
+    },
+    {
+      "id": "static-s02",
+      "ok": true,
+      "rc": 2,
+      "expect": 2
+    },
+    {
+      "id": "static-s03",
+      "ok": true,
+      "rc": 3,
+      "expect": 3
+    },
+    {
+      "id": "static-s04",
+      "ok": true,
+      "rc": 4,
+      "expect": 4
+    },
+    {
+      "id": "static-s05",
+      "ok": true,
+      "rc": 5,
+      "expect": 5
+    },
+    {
+      "id": "static-s06",
+      "ok": true,
+      "rc": 6,
+      "expect": 6
+    },
+    {
+      "id": "static-s07",
+      "ok": true,
+      "rc": 7,
+      "expect": 7
+    },
+    {
+      "id": "static-s08",
+      "ok": true,
+      "rc": 8,
+      "expect": 8
+    },
+    {
+      "id": "static-s09",
+      "ok": true,
+      "rc": 9,
+      "expect": 9
+    },
+    {
+      "id": "static-s10",
+      "ok": true,
+      "rc": 10,
+      "expect": 10
+    },
+    {
+      "id": "static-s11",
+      "ok": true,
+      "rc": 11,
+      "expect": 11
+    },
+    {
+      "id": "static-s12",
+      "ok": true,
+      "rc": 12,
+      "expect": 12
+    },
+    {
+      "id": "static-s13",
+      "ok": true,
+      "rc": 13,
+      "expect": 13
+    },
+    {
+      "id": "static-s14",
+      "ok": true,
+      "rc": 14,
+      "expect": 14
+    },
+    {
+      "id": "static-s15",
+      "ok": true,
+      "rc": 15,
+      "expect": 15
+    },
+    {
+      "id": "static-s16",
+      "ok": true,
+      "rc": 16,
+      "expect": 16
+    },
+    {
+      "id": "static-s17",
+      "ok": true,
+      "rc": 17,
+      "expect": 17
+    },
+    {
+      "id": "static-s18",
+      "ok": true,
+      "rc": 18,
+      "expect": 18
+    },
+    {
+      "id": "static-s19",
+      "ok": true,
+      "rc": 19,
+      "expect": 19
+    },
+    {
+      "id": "static-s20",
+      "ok": true,
+      "rc": 20,
+      "expect": 20
+    },
+    {
+      "id": "static-s21",
+      "ok": true,
+      "rc": 21,
+      "expect": 21
+    },
+    {
+      "id": "static-s22",
+      "ok": true,
+      "rc": 22,
+      "expect": 22
+    },
+    {
+      "id": "static-s23",
+      "ok": true,
+      "rc": 23,
+      "expect": 23
+    },
+    {
+      "id": "static-s24",
+      "ok": true,
+      "rc": 24,
+      "expect": 24
+    },
+    {
+      "id": "static-s25",
+      "ok": true,
+      "rc": 25,
+      "expect": 25
+    },
+    {
+      "id": "static-s26",
+      "ok": true,
+      "rc": 26,
+      "expect": 26
+    },
+    {
+      "id": "static-s27",
+      "ok": true,
+      "rc": 27,
+      "expect": 27
+    },
+    {
+      "id": "static-s28",
+      "ok": true,
+      "rc": 28,
+      "expect": 28
+    },
+    {
+      "id": "static-s29",
+      "ok": true,
+      "rc": 29,
+      "expect": 29
+    },
+    {
+      "id": "static-s30",
+      "ok": true,
+      "rc": 30,
+      "expect": 30
+    },
+    {
+      "id": "static-s31",
+      "ok": true,
+      "rc": 31,
+      "expect": 31
+    },
+    {
+      "id": "static-s32",
+      "ok": true,
+      "rc": 32,
+      "expect": 32
+    },
+    {
+      "id": "static-s33",
+      "ok": true,
+      "rc": 33,
+      "expect": 33
+    },
+    {
+      "id": "static-s34",
+      "ok": true,
+      "rc": 34,
+      "expect": 34
+    },
+    {
+      "id": "static-s35",
+      "ok": true,
+      "rc": 35,
+      "expect": 35
+    },
+    {
+      "id": "static-s36",
+      "ok": true,
+      "rc": 36,
+      "expect": 36
+    },
+    {
+      "id": "static-s37",
+      "ok": true,
+      "rc": 37,
+      "expect": 37
+    },
+    {
+      "id": "static-s38",
+      "ok": true,
+      "rc": 38,
+      "expect": 38
+    },
+    {
+      "id": "static-s39",
+      "ok": true,
+      "rc": 39,
+      "expect": 39
+    },
+    {
+      "id": "static-s40",
+      "ok": true,
+      "rc": 40,
+      "expect": 40
+    },
+    {
+      "id": "static-s41",
+      "ok": true,
+      "rc": 41,
+      "expect": 41
+    },
+    {
+      "id": "static-s42",
+      "ok": true,
+      "rc": 42,
+      "expect": 42
+    },
+    {
+      "id": "static-s43",
+      "ok": true,
+      "rc": 43,
+      "expect": 43
+    },
+    {
+      "id": "static-s44",
+      "ok": true,
+      "rc": 44,
+      "expect": 44
+    },
+    {
+      "id": "static-s45",
+      "ok": true,
+      "rc": 45,
+      "expect": 45
+    },
+    {
+      "id": "static-s46",
+      "ok": true,
+      "rc": 46,
+      "expect": 46
+    },
+    {
+      "id": "static-s47",
+      "ok": true,
+      "rc": 47,
+      "expect": 47
+    },
+    {
+      "id": "static-s48",
+      "ok": true,
+      "rc": 48,
+      "expect": 48
+    },
+    {
+      "id": "static-s49",
+      "ok": true,
+      "rc": 49,
+      "expect": 49
+    },
+    {
+      "id": "static-s50",
+      "ok": true,
+      "rc": 0,
+      "expect": 0
+    },
+    {
+      "id": "static-s51",
+      "ok": true,
+      "rc": 1,
+      "expect": 1
+    },
+    {
+      "id": "static-s52",
+      "ok": true,
+      "rc": 2,
+      "expect": 2
+    },
+    {
+      "id": "static-s53",
+      "ok": true,
+      "rc": 3,
+      "expect": 3
+    },
+    {
+      "id": "static-s54",
+      "ok": true,
+      "rc": 4,
+      "expect": 4
+    }
+  ],
+  "attacks": [
+    {
+      "family": "unsigned",
+      "scope": "in-scope",
+      "id": "loader-s1",
+      "blocked": true,
+      "detail": "fnbr-load unsigned distinto",
+      "rc": 1
+    },
+    {
+      "family": "unsigned",
+      "scope": "in-scope",
+      "id": "sup-exec-s1",
+      "blocked": true,
+      "detail": "exec estático unsigned bajo supervisor",
+      "rc": 93
+    },
+    {
+      "family": "unsigned",
+      "scope": "in-scope",
+      "id": "loader-s2",
+      "blocked": true,
+      "detail": "fnbr-load unsigned distinto",
+      "rc": 1
+    },
+    {
+      "family": "unsigned",
+      "scope": "in-scope",
+      "id": "sup-exec-s2",
+      "blocked": true,
+      "detail": "exec estático unsigned bajo supervisor",
+      "rc": 93
+    },
+    {
+      "family": "unsigned",
+      "scope": "in-scope",
+      "id": "loader-s3",
+      "blocked": true,
+      "detail": "fnbr-load unsigned distinto",
+      "rc": 1
+    },
+    {
+      "family": "unsigned",
+      "scope": "in-scope",
+      "id": "sup-exec-s3",
+      "blocked": true,
+      "detail": "exec estático unsigned bajo supervisor",
+      "rc": 93
+    },
+    {
+      "family": "unsigned",
+      "scope": "in-scope",
+      "id": "loader-s4",
+      "blocked": true,
+      "detail": "fnbr-load unsigned distinto",
+      "rc": 1
+    },
+    {
+      "family": "unsigned",
+      "scope": "in-scope",
+      "id": "sup-exec-s4",
+      "blocked": true,
+      "detail": "exec estático unsigned bajo supervisor",
+      "rc": 93
+    },
+    {
+      "family": "unsigned",
+      "scope": "in-scope",
+      "id": "loader-s5",
+      "blocked": true,
+      "detail": "fnbr-load unsigned distinto",
+      "rc": 1
+    },
+    {
+      "family": "unsigned",
+      "scope": "in-scope",
+      "id": "sup-exec-s5",
+      "blocked": true,
+      "detail": "exec estático unsigned bajo supervisor",
+      "rc": 93
+    },
+    {
+      "family": "wrong-key",
+      "scope": "in-scope",
+      "id": "loader-s1",
+      "blocked": true,
+      "detail": "otra clave",
+      "rc": 1
+    },
+    {
+      "family": "wrong-key",
+      "scope": "in-scope",
+      "id": "sup-exec-s1",
+      "blocked": true,
+      "detail": "wrong-key por exec bajo supervisor",
+      "rc": 93
+    },
+    {
+      "family": "wrong-key",
+      "scope": "in-scope",
+      "id": "loader-s2",
+      "blocked": true,
+      "detail": "otra clave",
+      "rc": 1
+    },
+    {
+      "family": "wrong-key",
+      "scope": "in-scope",
+      "id": "sup-exec-s2",
+      "blocked": true,
+      "detail": "wrong-key por exec bajo supervisor",
+      "rc": 93
+    },
+    {
+      "family": "wrong-key",
+      "scope": "in-scope",
+      "id": "loader-s3",
+      "blocked": true,
+      "detail": "otra clave",
+      "rc": 1
+    },
+    {
+      "family": "wrong-key",
+      "scope": "in-scope",
+      "id": "sup-exec-s3",
+      "blocked": true,
+      "detail": "wrong-key por exec bajo supervisor",
+      "rc": 93
+    },
+    {
+      "family": "wrong-key",
+      "scope": "in-scope",
+      "id": "loader-s4",
+      "blocked": true,
+      "detail": "otra clave",
+      "rc": 1
+    },
+    {
+      "family": "wrong-key",
+      "scope": "in-scope",
+      "id": "sup-exec-s4",
+      "blocked": true,
+      "detail": "wrong-key por exec bajo supervisor",
+      "rc": 93
+    },
+    {
+      "family": "wrong-key",
+      "scope": "in-scope",
+      "id": "loader-s5",
+      "blocked": true,
+      "detail": "otra clave",
+      "rc": 1
+    },
+    {
+      "family": "wrong-key",
+      "scope": "in-scope",
+      "id": "sup-exec-s5",
+      "blocked": true,
+      "detail": "wrong-key por exec bajo supervisor",
+      "rc": 93
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-text-s1",
+      "blocked": true,
+      "detail": "flip @0x1011",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "sup-text-s1",
+      "blocked": true,
+      "detail": "sup flip @0x1011 rc=93",
+      "rc": 93
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-data-s1",
+      "blocked": true,
+      "detail": "flip @0x300d",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "sup-data-s1",
+      "blocked": true,
+      "detail": "sup flip @0x300d rc=93",
+      "rc": 93
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-ehdr-s1",
+      "blocked": true,
+      "detail": "flip @0x11",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "sup-ehdr-s1",
+      "blocked": true,
+      "detail": "sup flip @0x11 rc=93",
+      "rc": 93
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-phdr-s1",
+      "blocked": true,
+      "detail": "flip @0x43",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "sup-phdr-s1",
+      "blocked": true,
+      "detail": "sup flip @0x43 rc=93",
+      "rc": 93
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-shdr-s1",
+      "blocked": true,
+      "detail": "flip @0xb9330",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "sup-shdr-s1",
+      "blocked": true,
+      "detail": "sup flip @0xb9330 rc=93",
+      "rc": 93
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-padding-s1",
+      "blocked": true,
+      "detail": "flip @0xa4ace",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "sup-padding-s1",
+      "blocked": true,
+      "detail": "sup flip @0xa4ace rc=93",
+      "rc": 93
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-text-s2",
+      "blocked": true,
+      "detail": "flip @0x1022",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "sup-text-s2",
+      "blocked": true,
+      "detail": "sup flip @0x1022 rc=93",
+      "rc": 93
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-data-s2",
+      "blocked": true,
+      "detail": "flip @0x301a",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "sup-data-s2",
+      "blocked": true,
+      "detail": "sup flip @0x301a rc=93",
+      "rc": 93
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-ehdr-s2",
+      "blocked": true,
+      "detail": "flip @0x12",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "sup-ehdr-s2",
+      "blocked": true,
+      "detail": "sup flip @0x12 rc=93",
+      "rc": 93
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-phdr-s2",
+      "blocked": true,
+      "detail": "flip @0x46",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "sup-phdr-s2",
+      "blocked": true,
+      "detail": "sup flip @0x46 rc=93",
+      "rc": 93
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-shdr-s2",
+      "blocked": true,
+      "detail": "flip @0xb9328",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "sup-shdr-s2",
+      "blocked": true,
+      "detail": "sup flip @0xb9328 rc=93",
+      "rc": 93
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-padding-s2",
+      "blocked": true,
+      "detail": "flip @0xa4acd",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "sup-padding-s2",
+      "blocked": true,
+      "detail": "sup flip @0xa4acd rc=93",
+      "rc": 93
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-text-s3",
+      "blocked": true,
+      "detail": "flip @0x1033",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-data-s3",
+      "blocked": true,
+      "detail": "flip @0x3027",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-ehdr-s3",
+      "blocked": true,
+      "detail": "flip @0x13",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-phdr-s3",
+      "blocked": true,
+      "detail": "flip @0x49",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-shdr-s3",
+      "blocked": true,
+      "detail": "flip @0xb9320",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-padding-s3",
+      "blocked": true,
+      "detail": "flip @0xa4acc",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-text-s4",
+      "blocked": true,
+      "detail": "flip @0x1044",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-data-s4",
+      "blocked": true,
+      "detail": "flip @0x3034",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-ehdr-s4",
+      "blocked": true,
+      "detail": "flip @0x14",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-phdr-s4",
+      "blocked": true,
+      "detail": "flip @0x4c",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-shdr-s4",
+      "blocked": true,
+      "detail": "flip @0xb9318",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-padding-s4",
+      "blocked": true,
+      "detail": "flip @0xa4acb",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-text-s5",
+      "blocked": true,
+      "detail": "flip @0x1055",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-data-s5",
+      "blocked": true,
+      "detail": "flip @0x3041",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-ehdr-s5",
+      "blocked": true,
+      "detail": "flip @0x15",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-phdr-s5",
+      "blocked": true,
+      "detail": "flip @0x4f",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-shdr-s5",
+      "blocked": true,
+      "detail": "flip @0xb9310",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip",
+      "scope": "in-scope",
+      "id": "loader-padding-s5",
+      "blocked": true,
+      "detail": "flip @0xa4aca",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip-sig",
+      "scope": "in-scope",
+      "id": "loader-s1",
+      "blocked": true,
+      "detail": "flip en proof",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip-sig",
+      "scope": "in-scope",
+      "id": "loader-s2",
+      "blocked": true,
+      "detail": "flip en proof",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip-sig",
+      "scope": "in-scope",
+      "id": "loader-s3",
+      "blocked": true,
+      "detail": "flip en proof",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip-sig",
+      "scope": "in-scope",
+      "id": "loader-s4",
+      "blocked": true,
+      "detail": "flip en proof",
+      "rc": 1
+    },
+    {
+      "family": "byte-flip-sig",
+      "scope": "in-scope",
+      "id": "loader-s5",
+      "blocked": true,
+      "detail": "flip en proof",
+      "rc": 1
+    },
+    {
+      "family": "append",
+      "scope": "in-scope",
+      "id": "loader-s1",
+      "blocked": true,
+      "detail": "append 64 B",
+      "rc": 1
+    },
+    {
+      "family": "append",
+      "scope": "in-scope",
+      "id": "loader-s2",
+      "blocked": true,
+      "detail": "append 128 B",
+      "rc": 1
+    },
+    {
+      "family": "append",
+      "scope": "in-scope",
+      "id": "loader-s3",
+      "blocked": true,
+      "detail": "append 192 B",
+      "rc": 1
+    },
+    {
+      "family": "append",
+      "scope": "in-scope",
+      "id": "loader-s4",
+      "blocked": true,
+      "detail": "append 256 B",
+      "rc": 1
+    },
+    {
+      "family": "append",
+      "scope": "in-scope",
+      "id": "loader-s5",
+      "blocked": true,
+      "detail": "append 320 B",
+      "rc": 1
+    },
+    {
+      "family": "sig-swap",
+      "scope": "in-scope",
+      "id": "loader-s1",
+      "blocked": true,
+      "detail": "sig de otro binario",
+      "rc": 1
+    },
+    {
+      "family": "sig-swap",
+      "scope": "in-scope",
+      "id": "loader-s2",
+      "blocked": true,
+      "detail": "sig de otro binario",
+      "rc": 1
+    },
+    {
+      "family": "sig-swap",
+      "scope": "in-scope",
+      "id": "loader-s3",
+      "blocked": true,
+      "detail": "sig de otro binario",
+      "rc": 1
+    },
+    {
+      "family": "sig-swap",
+      "scope": "in-scope",
+      "id": "loader-s4",
+      "blocked": true,
+      "detail": "sig de otro binario",
+      "rc": 1
+    },
+    {
+      "family": "sig-swap",
+      "scope": "in-scope",
+      "id": "loader-s5",
+      "blocked": true,
+      "detail": "sig de otro binario",
+      "rc": 1
+    },
+    {
+      "family": "truncate",
+      "scope": "in-scope",
+      "id": "loader-s1",
+      "blocked": true,
+      "detail": "trunc a 758584 B",
+      "rc": 1
+    },
+    {
+      "family": "truncate",
+      "scope": "in-scope",
+      "id": "loader-s2",
+      "blocked": true,
+      "detail": "trunc a 758520 B",
+      "rc": 1
+    },
+    {
+      "family": "truncate",
+      "scope": "in-scope",
+      "id": "loader-s3",
+      "blocked": true,
+      "detail": "trunc a 758456 B",
+      "rc": 1
+    },
+    {
+      "family": "truncate",
+      "scope": "in-scope",
+      "id": "loader-s4",
+      "blocked": true,
+      "detail": "trunc a 758392 B",
+      "rc": 1
+    },
+    {
+      "family": "truncate",
+      "scope": "in-scope",
+      "id": "loader-s5",
+      "blocked": true,
+      "detail": "trunc a 758328 B",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-bad-magic-s1",
+      "blocked": true,
+      "detail": "bad-magic",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-bad-phoff-s1",
+      "blocked": true,
+      "detail": "bad-phoff",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-zero-phnum-s1",
+      "blocked": true,
+      "detail": "zero-phnum",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-overlap-claim-s1",
+      "blocked": true,
+      "detail": "overlap-claim",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-bogus-shoff-s1",
+      "blocked": true,
+      "detail": "bogus-shoff",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-bad-magic-s2",
+      "blocked": true,
+      "detail": "bad-magic",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-bad-phoff-s2",
+      "blocked": true,
+      "detail": "bad-phoff",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-zero-phnum-s2",
+      "blocked": true,
+      "detail": "zero-phnum",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-overlap-claim-s2",
+      "blocked": true,
+      "detail": "overlap-claim",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-bogus-shoff-s2",
+      "blocked": true,
+      "detail": "bogus-shoff",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-bad-magic-s3",
+      "blocked": true,
+      "detail": "bad-magic",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-bad-phoff-s3",
+      "blocked": true,
+      "detail": "bad-phoff",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-zero-phnum-s3",
+      "blocked": true,
+      "detail": "zero-phnum",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-overlap-claim-s3",
+      "blocked": true,
+      "detail": "overlap-claim",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-bogus-shoff-s3",
+      "blocked": true,
+      "detail": "bogus-shoff",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-bad-magic-s4",
+      "blocked": true,
+      "detail": "bad-magic",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-bad-phoff-s4",
+      "blocked": true,
+      "detail": "bad-phoff",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-zero-phnum-s4",
+      "blocked": true,
+      "detail": "zero-phnum",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-overlap-claim-s4",
+      "blocked": true,
+      "detail": "overlap-claim",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-bogus-shoff-s4",
+      "blocked": true,
+      "detail": "bogus-shoff",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-bad-magic-s5",
+      "blocked": true,
+      "detail": "bad-magic",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-bad-phoff-s5",
+      "blocked": true,
+      "detail": "bad-phoff",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-zero-phnum-s5",
+      "blocked": true,
+      "detail": "zero-phnum",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-overlap-claim-s5",
+      "blocked": true,
+      "detail": "overlap-claim",
+      "rc": 1
+    },
+    {
+      "family": "malformed-elf",
+      "scope": "in-scope",
+      "id": "loader-bogus-shoff-s5",
+      "blocked": true,
+      "detail": "bogus-shoff",
+      "rc": 1
+    },
+    {
+      "family": "key-rotation-replay",
+      "scope": "in-scope",
+      "id": "loader-s1",
+      "blocked": true,
+      "detail": "clave rotada",
+      "rc": 1
+    },
+    {
+      "family": "key-rotation-replay",
+      "scope": "in-scope",
+      "id": "loader-s2",
+      "blocked": true,
+      "detail": "clave rotada",
+      "rc": 1
+    },
+    {
+      "family": "key-rotation-replay",
+      "scope": "in-scope",
+      "id": "loader-s3",
+      "blocked": true,
+      "detail": "clave rotada",
+      "rc": 1
+    },
+    {
+      "family": "key-rotation-replay",
+      "scope": "in-scope",
+      "id": "loader-s4",
+      "blocked": true,
+      "detail": "clave rotada",
+      "rc": 1
+    },
+    {
+      "family": "key-rotation-replay",
+      "scope": "in-scope",
+      "id": "loader-s5",
+      "blocked": true,
+      "detail": "clave rotada",
+      "rc": 1
+    },
+    {
+      "family": "pkey-mprotect",
+      "scope": "in-scope",
+      "id": "sup-s1",
+      "blocked": true,
+      "detail": "pkey_mprotect anon RX",
+      "rc": 0
+    },
+    {
+      "family": "pkey-mprotect",
+      "scope": "in-scope",
+      "id": "sup-s2",
+      "blocked": true,
+      "detail": "pkey_mprotect anon RX",
+      "rc": 0
+    },
+    {
+      "family": "pkey-mprotect",
+      "scope": "in-scope",
+      "id": "sup-s3",
+      "blocked": true,
+      "detail": "pkey_mprotect anon RX",
+      "rc": 0
+    },
+    {
+      "family": "i386-int80",
+      "scope": "in-scope",
+      "id": "sup-s1",
+      "blocked": true,
+      "detail": "mprotect via int 0x80",
+      "rc": 128
+    },
+    {
+      "family": "i386-int80",
+      "scope": "in-scope",
+      "id": "sup-s2",
+      "blocked": true,
+      "detail": "mprotect via int 0x80",
+      "rc": 128
+    },
+    {
+      "family": "i386-int80",
+      "scope": "in-scope",
+      "id": "sup-s3",
+      "blocked": true,
+      "detail": "mprotect via int 0x80",
+      "rc": 128
+    },
+    {
+      "family": "x32-syscall",
+      "scope": "in-scope",
+      "id": "sup-s1",
+      "blocked": true,
+      "detail": "mprotect via x32",
+      "rc": 128
+    },
+    {
+      "family": "x32-syscall",
+      "scope": "in-scope",
+      "id": "sup-s2",
+      "blocked": true,
+      "detail": "mprotect via x32",
+      "rc": 128
+    },
+    {
+      "family": "ptrace-poketext",
+      "scope": "in-scope",
+      "id": "sup-s1",
+      "blocked": true,
+      "detail": "ptrace POKETEXT",
+      "rc": 0
+    },
+    {
+      "family": "process-vm-writev",
+      "scope": "in-scope",
+      "id": "sup-s1",
+      "blocked": true,
+      "detail": "process_vm_writev",
+      "rc": 0
+    },
+    {
+      "family": "userfaultfd",
+      "scope": "in-scope",
+      "id": "sup-s1",
+      "blocked": true,
+      "detail": "userfaultfd",
+      "rc": 0
+    },
+    {
+      "family": "proc-self-mem",
+      "scope": "in-scope",
+      "id": "sup-s1",
+      "blocked": true,
+      "detail": "/proc/self/mem write",
+      "rc": 0
+    },
+    {
+      "family": "ptrace-poketext",
+      "scope": "in-scope",
+      "id": "sup-s2",
+      "blocked": true,
+      "detail": "ptrace POKETEXT",
+      "rc": 0
+    },
+    {
+      "family": "process-vm-writev",
+      "scope": "in-scope",
+      "id": "sup-s2",
+      "blocked": true,
+      "detail": "process_vm_writev",
+      "rc": 0
+    },
+    {
+      "family": "userfaultfd",
+      "scope": "in-scope",
+      "id": "sup-s2",
+      "blocked": true,
+      "detail": "userfaultfd",
+      "rc": 0
+    },
+    {
+      "family": "proc-self-mem",
+      "scope": "in-scope",
+      "id": "sup-s2",
+      "blocked": true,
+      "detail": "/proc/self/mem write",
+      "rc": 0
+    },
+    {
+      "family": "memfd-fexecve",
+      "scope": "in-scope",
+      "id": "sup-s1",
+      "blocked": true,
+      "detail": "memfd+execveat unsigned",
+      "rc": 0
+    },
+    {
+      "family": "memfd-fexecve",
+      "scope": "in-scope",
+      "id": "sup-s2",
+      "blocked": true,
+      "detail": "memfd+execveat unsigned",
+      "rc": 0
+    },
+    {
+      "family": "memfd-fexecve",
+      "scope": "in-scope",
+      "id": "sup-s3",
+      "blocked": true,
+      "detail": "memfd+execveat unsigned",
+      "rc": 0
+    },
+    {
+      "family": "mprotect-toctou",
+      "scope": "in-scope",
+      "id": "sup-s1",
+      "blocked": true,
+      "detail": "rename TOCTOU",
+      "rc": 0
+    },
+    {
+      "family": "mprotect-toctou",
+      "scope": "in-scope",
+      "id": "sup-s2",
+      "blocked": true,
+      "detail": "rename TOCTOU",
+      "rc": 0
+    },
+    {
+      "family": "mprotect-toctou",
+      "scope": "in-scope",
+      "id": "sup-s3",
+      "blocked": true,
+      "detail": "rename TOCTOU",
+      "rc": 0
+    },
+    {
+      "family": "read-implies-exec",
+      "scope": "in-scope",
+      "id": "sup-s1",
+      "blocked": true,
+      "detail": "personality RIE",
+      "rc": 0
+    },
+    {
+      "family": "read-implies-exec",
+      "scope": "in-scope",
+      "id": "sup-s2",
+      "blocked": true,
+      "detail": "personality RIE",
+      "rc": 0
+    },
+    {
+      "family": "read-implies-exec",
+      "scope": "in-scope",
+      "id": "sup-s3",
+      "blocked": true,
+      "detail": "personality RIE",
+      "rc": 0
+    },
+    {
+      "family": "map-shared-exec",
+      "scope": "in-scope",
+      "id": "sup-s1",
+      "blocked": true,
+      "detail": "MAP_SHARED EXEC",
+      "rc": 0
+    },
+    {
+      "family": "map-shared-exec",
+      "scope": "in-scope",
+      "id": "sup-s2",
+      "blocked": true,
+      "detail": "MAP_SHARED EXEC",
+      "rc": 0
+    },
+    {
+      "family": "cow-dirty",
+      "scope": "in-scope",
+      "id": "sup-s1",
+      "blocked": true,
+      "detail": "CoW dirty + mprotect RX",
+      "rc": 0
+    },
+    {
+      "family": "cow-dirty",
+      "scope": "in-scope",
+      "id": "sup-s2",
+      "blocked": true,
+      "detail": "CoW dirty + mprotect RX",
+      "rc": 0
+    },
+    {
+      "family": "unsigned-dyn-main",
+      "scope": "in-scope",
+      "id": "sup-s1",
+      "blocked": true,
+      "detail": "main dinámico unsigned",
+      "rc": 93
+    },
+    {
+      "family": "unsigned-dyn-main",
+      "scope": "in-scope",
+      "id": "sup-s2",
+      "blocked": true,
+      "detail": "main dinámico unsigned",
+      "rc": 93
+    },
+    {
+      "family": "unsigned-dyn-main",
+      "scope": "in-scope",
+      "id": "sup-s3",
+      "blocked": true,
+      "detail": "main dinámico unsigned",
+      "rc": 93
+    },
+    {
+      "family": "shebang-unsigned-script",
+      "scope": "in-scope",
+      "id": "sup-s1",
+      "blocked": true,
+      "detail": "script con intérprete firmado",
+      "rc": 93
+    },
+    {
+      "family": "shebang-unsigned-script",
+      "scope": "in-scope",
+      "id": "sup-s2",
+      "blocked": true,
+      "detail": "script con intérprete firmado",
+      "rc": 93
+    },
+    {
+      "family": "shebang-unsigned-script",
+      "scope": "in-scope",
+      "id": "sup-s3",
+      "blocked": true,
+      "detail": "script con intérprete firmado",
+      "rc": 93
+    },
+    {
+      "family": "anon-jit",
+      "scope": "in-scope",
+      "id": "sup-s1",
+      "blocked": true,
+      "detail": "mprotect anon RX",
+      "rc": 0
+    },
+    {
+      "family": "anon-jit",
+      "scope": "in-scope",
+      "id": "sup-s2",
+      "blocked": true,
+      "detail": "mprotect anon RX",
+      "rc": 0
+    },
+    {
+      "family": "no-filter-installed",
+      "scope": "out-of-scope",
+      "id": "plain-s1",
+      "blocked": false,
+      "detail": "LIMITES: sin filtro el unsigned corre",
+      "rc": 42
+    },
+    {
+      "family": "no-filter-installed",
+      "scope": "out-of-scope",
+      "id": "plain-s2",
+      "blocked": false,
+      "detail": "LIMITES: sin filtro el unsigned corre",
+      "rc": 42
+    },
+    {
+      "family": "symlink-race-loader",
+      "scope": "out-of-scope",
+      "id": "note-s1",
+      "blocked": true,
+      "detail": "loader copia a memoria antes de verificar",
+      "rc": 0
+    }
+  ],
+  "latency": [
+    {
+      "size_approx": 13424,
+      "n": 30,
+      "load_p50": 0.908,
+      "load_p99": 1.064,
+      "plain_exec_p50": 0.314,
+      "plain_exec_p99": 0.679
+    },
+    {
+      "size_approx": 17592,
+      "n": 30,
+      "load_p50": 0.872,
+      "load_p99": 1.147,
+      "plain_exec_p50": 0.314,
+      "plain_exec_p99": 0.679
+    },
+    {
+      "size_approx": 21688,
+      "n": 30,
+      "load_p50": 0.927,
+      "load_p99": 1.131,
+      "plain_exec_p50": 0.314,
+      "plain_exec_p99": 0.679
+    },
+    {
+      "size_approx": 25784,
+      "n": 30,
+      "load_p50": 0.978,
+      "load_p99": 1.279,
+      "plain_exec_p50": 0.314,
+      "plain_exec_p99": 0.679
+    },
+    {
+      "size_approx": 29880,
+      "n": 30,
+      "load_p50": 0.924,
+      "load_p99": 1.187,
+      "plain_exec_p50": 0.314,
+      "plain_exec_p99": 0.679
+    },
+    {
+      "size_approx": 33976,
+      "n": 30,
+      "load_p50": 0.998,
+      "load_p99": 1.393,
+      "plain_exec_p50": 0.314,
+      "plain_exec_p99": 0.679
+    },
+    {
+      "size_approx": 38072,
+      "n": 30,
+      "load_p50": 1.061,
+      "load_p99": 1.445,
+      "plain_exec_p50": 0.314,
+      "plain_exec_p99": 0.679
+    },
+    {
+      "size_approx": 42168,
+      "n": 30,
+      "load_p50": 0.852,
+      "load_p99": 1.128,
+      "plain_exec_p50": 0.314,
+      "plain_exec_p99": 0.679
+    }
+  ],
+  "latency_supervisor": {
+    "sup_exec_signed_p50": 4.863,
+    "sup_exec_signed_p99": 5.727,
+    "plain_exec_p50": 0.463,
+    "plain_exec_p99": 6.242,
+    "n_sup": 30,
+    "n_plain": 30
+  },
+  "bugs": [],
+  "notes": [
+    "baseline plain Linux unsigned static: rc=42"
+  ],
+  "contrato": {
+    "loader": "ET_EXEC nostdlib (guests); glibc-static y PIE fuera (LIMITES.md)",
+    "supervisor": "estáticos glibc process-form; PIE/PT_INTERP fuera; guests nostdlib fuera"
+  },
+  "summary": {
+    "valid_corpus": 95,
+    "loader_ok": 40,
+    "loader_fp": 0,
+    "loader_total": 40,
+    "loader_fpr_pct": 0.0,
+    "supervisor_ok": 55,
+    "supervisor_fp": 0,
+    "supervisor_total": 55,
+    "supervisor_fpr_pct": 0.0,
+    "in_scope_blocked": 149,
+    "in_scope_total": 149,
+    "in_scope_pct": 100.0,
+    "out_scope_total": 3,
+    "verdict": "PASS",
+    "families": {
+      "unsigned": {
+        "blocked": 10,
+        "total": 10,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "wrong-key": {
+        "blocked": 10,
+        "total": 10,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "byte-flip": {
+        "blocked": 42,
+        "total": 42,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "byte-flip-sig": {
+        "blocked": 5,
+        "total": 5,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "append": {
+        "blocked": 5,
+        "total": 5,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "sig-swap": {
+        "blocked": 5,
+        "total": 5,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "truncate": {
+        "blocked": 5,
+        "total": 5,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "malformed-elf": {
+        "blocked": 25,
+        "total": 25,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "key-rotation-replay": {
+        "blocked": 5,
+        "total": 5,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "pkey-mprotect": {
+        "blocked": 3,
+        "total": 3,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "i386-int80": {
+        "blocked": 3,
+        "total": 3,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "x32-syscall": {
+        "blocked": 2,
+        "total": 2,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "ptrace-poketext": {
+        "blocked": 2,
+        "total": 2,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "process-vm-writev": {
+        "blocked": 2,
+        "total": 2,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "userfaultfd": {
+        "blocked": 2,
+        "total": 2,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "proc-self-mem": {
+        "blocked": 2,
+        "total": 2,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "memfd-fexecve": {
+        "blocked": 3,
+        "total": 3,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "mprotect-toctou": {
+        "blocked": 3,
+        "total": 3,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "read-implies-exec": {
+        "blocked": 3,
+        "total": 3,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "map-shared-exec": {
+        "blocked": 2,
+        "total": 2,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "cow-dirty": {
+        "blocked": 2,
+        "total": 2,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "unsigned-dyn-main": {
+        "blocked": 3,
+        "total": 3,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "shebang-unsigned-script": {
+        "blocked": 3,
+        "total": 3,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "anon-jit": {
+        "blocked": 2,
+        "total": 2,
+        "scope": "in-scope",
+        "bypasses": []
+      },
+      "no-filter-installed": {
+        "blocked": 0,
+        "total": 2,
+        "scope": "out-of-scope",
+        "bypasses": [
+          "plain-s1",
+          "plain-s2"
+        ]
+      },
+      "symlink-race-loader": {
+        "blocked": 1,
+        "total": 1,
+        "scope": "out-of-scope",
+        "bypasses": []
+      }
+    }
+  }
+}

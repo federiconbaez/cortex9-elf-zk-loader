@@ -1,0 +1,8 @@
+preparado fixtures/guest.unsigned.elf (sección .fnbr.sig en cero, sin firmar)
+firmado Ed25519 fixtures/guest.signed.elf key_id=fae7e4cd3316f2728710e3dbe4f15eb7dc257e1a149b011bc0b76868723880bd
+firmado Ed25519 fixtures/guest.signed-otherkey.elf key_id=6287655b4ba2843da6be836848d7e2f617cacdfda1e2ae802851c59c35b526d6
+fixtures listos:
+-rw-r--r-- 1 box box  13320 Oct 21 04:23 fixtures/guest.signed-otherkey.elf
+-rw-r--r-- 1 box box  13320 Oct 21 04:23 fixtures/guest.signed.elf
+-rwxr-xr-x 1 box box  13320 Oct 21 04:23 fixtures/guest.unsigned.elf
+-rwxr-xr-x 1 box box 794616 Oct 21 04:23 fixtures/rawload

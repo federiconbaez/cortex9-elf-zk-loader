@@ -1,0 +1,2 @@
+    Checking fnbr-elf-zk-loader v0.1.0 (/workspace/sistemas/09-elf-zk-loader)
+    Finished `release` profile [optimized] target(s) in 0.13s
