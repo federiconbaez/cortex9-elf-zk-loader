@@ -3,7 +3,15 @@
 > **ES:** Cargador ELF en Rust que solo ejecuta binarios firmados, con supervisor seccomp. Compilar/probar: `make && cargo test`.
 > **EN:** Rust ELF loader that only executes signed binaries, with a seccomp supervisor. Build/test: `make && cargo test`.
 >
-> **Estado / Status (AUDIT-valor.md, commit `0689cab`, antes `64413db` previo a la limpieza del historial): veredicto auditado FAIL / audited verdict FAIL.** Bloqueó 122/143 ataques en alcance = **85,3 %**, y el umbral exige **100 %** → falla. Además, 10/50 binarios glibc estáticos firmados no corren (20 % de fallo funcional). Después hubo un arreglo v0.3 (memfd sellado + execveat) y una remedición propia que reporta PASS 149/149; esa remedición **no está auditada** / v0.3 re-measurement is **not audited**. Licencia / License: Apache-2.0.
+> **Estado / Status: el PASS 149/149 de v0.3 (`e1b9d79`) quedó auditado sobre el corpus medido / v0.3 PASS 149/149 audited on the measured corpus** (`experimento/auditoria/AUDIT-valor-v03.md`, commit `388e569`). Re-corrida en clon aparte: 149/149, loader 0/40 FP, supervisor 0/55 FP, tests 56/56.
+>
+> **Salvedades / Caveats:**
+> 1. `mremap` y `remap_file_pages` no se probaron: tienen política pero ningún ataque del corpus / have policy but no attack in the corpus.
+> 2. Los 10/50 binarios glibc estáticos salieron del contrato del loader y no están arreglados / 10/50 static glibc binaries were removed from the loader contract, not fixed.
+> 3. Falta un control positivo: el harness no muestra que cada ataque funcione sin supervisor / no positive control.
+> 4. Los tres commits (corpus `198a7d4`, arreglo `6953a3d`, medición `e1b9d79`) se hicieron en tanda en 30 s: el orden prueba la secuencia, no que el arreglo se haya escrito después de fijar el corpus / committed in one batch.
+>
+> **Historia / History:** la auditoría anterior (`AUDIT-valor.md`, commit `0689cab`, antes `64413db`) dio FAIL: 122/143 = 85,3 % contra un umbral de 100 %, y 10/50 glibc estáticos sin correr. Licencia / License: Apache-2.0.
 
 
 **Dueña:** בֶּן הָאֱלֹהִים הַחַי (rol de auditoría de seguridad)
