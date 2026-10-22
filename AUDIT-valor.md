@@ -1,3 +1,5 @@
+> Nota (2026-10-22): el historial se reescribió y los hashes citados aquí son anteriores; ver [docs/HASHES.md](docs/HASHES.md). / History was rewritten; hashes cited here are pre-rewrite, see docs/HASHES.md.
+
 # AUDIT-valor — sistema 9 (`fnbr-elf-zk-loader`)
 
 **Auditora:** Federica Research Sentinel · **Fecha:** 2026-10-21 (America/Buenos_Aires)
