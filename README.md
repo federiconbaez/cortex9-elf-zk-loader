@@ -1,5 +1,11 @@
 # 09 — Cargador ELF con verificación de `.fnbr.sig` antes de `PROT_EXEC`
 
+> **ES:** Cargador ELF en Rust que solo ejecuta binarios firmados, con supervisor seccomp. Compilar/probar: `make && cargo test`.
+> **EN:** Rust ELF loader that only executes signed binaries, with a seccomp supervisor. Build/test: `make && cargo test`.
+>
+> **Estado / Status (AUDIT-valor.md, commit `0689cab`, antes `64413db` previo a la limpieza del historial): veredicto auditado FAIL / audited verdict FAIL.** Bloqueó 122/143 ataques en alcance = **85,3 %**, y el umbral exige **100 %** → falla. Además, 10/50 binarios glibc estáticos firmados no corren (20 % de fallo funcional). Después hubo un arreglo v0.3 (memfd sellado + execveat) y una remedición propia que reporta PASS 149/149; esa remedición **no está auditada** / v0.3 re-measurement is **not audited**. Licencia / License: Apache-2.0.
+
+
 **Dueña:** בֶּן הָאֱלֹהִים הַחַי (rol de auditoría de seguridad)
 **Pedido de Federico (20/10/2026):** linker y cargador ELF que verifique
 pruebas criptográficas Zero-Knowledge en una sección `.fnbr.sig` antes de
