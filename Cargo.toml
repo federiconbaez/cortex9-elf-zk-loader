@@ -3,7 +3,7 @@ name = "fnbr-elf-zk-loader"
 version = "0.1.0"
 edition = "2021"
 description = "Cargador ELF que verifica la sección .fnbr.sig antes de conceder PROT_EXEC (FNBR #9)"
-license = "MIT"
+license = "MIT OR Apache-2.0"
 publish = false
 
 [lib]
